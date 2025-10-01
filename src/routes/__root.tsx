@@ -14,11 +14,11 @@ export const Route = createRootRoute({
   component: () => {
     return (
       <VoiceProvider>
-        <div className='h-screen flex flex-col bg-black'>
-          <div className='h-full'>
+        <div className='h-screen flex flex-col bg-black overflow-hidden'>
+          <div className='flex-1 overflow-hidden'>
             <Outlet />
           </div>
-          <nav className="py-4 flex bg-indigo-500 pb-6 justify-between justify-center mx-1 rounded-t-2xl shadow-lg">
+          <nav className="py-4 flex bg-indigo-500 pb-8 justify-between justify-center mx-1 rounded-t-2xl shadow-lg">
             {navItems.map((item) => (
               <Link
                 key={item.to}
