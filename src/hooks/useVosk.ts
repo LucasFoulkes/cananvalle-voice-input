@@ -31,6 +31,12 @@ export const useVoskRecognition = ({ onTranscript, modelPath }: UseVoskRecogniti
     const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null)
     const streamRef = useRef<MediaStream | null>(null)
     const analyserRef = useRef<AnalyserNode | null>(null)
+    const onTranscriptRef = useRef(onTranscript)
+
+    // Keep latest callback without reinitializing Vosk
+    useEffect(() => {
+        onTranscriptRef.current = onTranscript
+    }, [onTranscript])
 
     useEffect(() => {
         let mounted = true
@@ -59,7 +65,11 @@ export const useVoskRecognition = ({ onTranscript, modelPath }: UseVoskRecogniti
                     if (message.result && message.result.text) {
                         const transcript = message.result.text.trim()
                         if (transcript.length > 0) {
-                            onTranscript(transcript)
+                            try {
+                                onTranscriptRef.current?.(transcript)
+                            } catch {
+                                // ignore
+                            }
                             setPartial('')
                         }
                     }
@@ -87,7 +97,7 @@ export const useVoskRecognition = ({ onTranscript, modelPath }: UseVoskRecogniti
             mounted = false
             stopRecording()
         }
-    }, [modelPath, onTranscript])
+    }, [modelPath])
 
     const stopRecording = () => {
         if (processorRef.current) {
@@ -137,7 +147,11 @@ export const useVoskRecognition = ({ onTranscript, modelPath }: UseVoskRecogniti
             const processor: ScriptProcessorNode = audioContext.createScriptProcessor(4096, 1, 1)
 
             source.connect(processor)
-            processor.connect(audioContext.destination)
+            // Keep processor alive without routing mic to speakers (avoid feedback)
+            const sink = audioContext.createGain()
+            sink.gain.value = 0
+            processor.connect(sink)
+            sink.connect(audioContext.destination)
 
             processor.onaudioprocess = (e: AudioProcessingEvent) => {
                 if (recognizerRef.current) {

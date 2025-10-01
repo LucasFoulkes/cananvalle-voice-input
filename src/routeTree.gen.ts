@@ -9,18 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PostsRouteImport } from './routes/posts'
 import { Route as ObservacionesRouteImport } from './routes/observaciones'
 import { Route as InstruccionesRouteImport } from './routes/instrucciones'
 import { Route as AjustesRouteImport } from './routes/ajustes'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
-const PostsRoute = PostsRouteImport.update({
-  id: '/posts',
-  path: '/posts',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ObservacionesRoute = ObservacionesRouteImport.update({
   id: '/observaciones',
   path: '/observaciones',
@@ -53,7 +47,6 @@ export interface FileRoutesByFullPath {
   '/ajustes': typeof AjustesRoute
   '/instrucciones': typeof InstruccionesRoute
   '/observaciones': typeof ObservacionesRoute
-  '/posts': typeof PostsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +54,6 @@ export interface FileRoutesByTo {
   '/ajustes': typeof AjustesRoute
   '/instrucciones': typeof InstruccionesRoute
   '/observaciones': typeof ObservacionesRoute
-  '/posts': typeof PostsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,25 +62,12 @@ export interface FileRoutesById {
   '/ajustes': typeof AjustesRoute
   '/instrucciones': typeof InstruccionesRoute
   '/observaciones': typeof ObservacionesRoute
-  '/posts': typeof PostsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/about'
-    | '/ajustes'
-    | '/instrucciones'
-    | '/observaciones'
-    | '/posts'
+  fullPaths: '/' | '/about' | '/ajustes' | '/instrucciones' | '/observaciones'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/about'
-    | '/ajustes'
-    | '/instrucciones'
-    | '/observaciones'
-    | '/posts'
+  to: '/' | '/about' | '/ajustes' | '/instrucciones' | '/observaciones'
   id:
     | '__root__'
     | '/'
@@ -96,7 +75,6 @@ export interface FileRouteTypes {
     | '/ajustes'
     | '/instrucciones'
     | '/observaciones'
-    | '/posts'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -105,18 +83,10 @@ export interface RootRouteChildren {
   AjustesRoute: typeof AjustesRoute
   InstruccionesRoute: typeof InstruccionesRoute
   ObservacionesRoute: typeof ObservacionesRoute
-  PostsRoute: typeof PostsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/posts': {
-      id: '/posts'
-      path: '/posts'
-      fullPath: '/posts'
-      preLoaderRoute: typeof PostsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/observaciones': {
       id: '/observaciones'
       path: '/observaciones'
@@ -161,7 +131,6 @@ const rootRouteChildren: RootRouteChildren = {
   AjustesRoute: AjustesRoute,
   InstruccionesRoute: InstruccionesRoute,
   ObservacionesRoute: ObservacionesRoute,
-  PostsRoute: PostsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

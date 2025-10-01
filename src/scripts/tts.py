@@ -1,22 +1,22 @@
 """
-Simple console TTS: type a phrase, it speaks; press Enter on an empty line (or type 'salir'/'exit') to quit.
+Simple console TTS (online, male Spanish only): type a phrase, it speaks; Enter on empty line to quit.
 
-Requirements:
-    pip install gTTS
-Optional (recommended for no-window playback):
-    pip install playsound==1.2.2
-    (Alternative without installing playsound on Windows: use --no-window to try built-in MCI or winsound)
+Defaults (fixed):
+    - Voice provider: Edge TTS (online)
+    - Voice: es-EC-DiegoNeural (male, Spanish Ecuador)
+    - Playback rate: +25%
 
-Usage (Windows PowerShell):
-    # Standard Spanish, Peru accent via TLD
-    python src/scripts/tts.py --lang es --tld com.pe
+Notes:
+    - Requires 'edge-tts' to be installed.
+    - Playback stays in the terminal (no windows). On Windows we prefer MCI/playsound for in-process playback.
 
-    # Prefer in-process, no-window playback (Windows)
-    python src/scripts/tts.py --no-window --lang es --tld com.pe
+Install:
+    pip install edge-tts playsound==1.2.2
+
+Run:
+    python src/scripts/tts.py
 """
 
-from gtts import gTTS
-import argparse
 import os
 import platform
 import subprocess
@@ -47,7 +47,7 @@ def _windows_play_wmplayer(path: str) -> bool:
     return False
 
 
-def _windows_play_mci(path: str, verbose: bool = True) -> bool:
+def _windows_play_mci(path: str, verbose: bool = True, speed_multiplier: float = 1.0) -> bool:
     """Play MP3 using Windows MCI (Media Control Interface) via winmm.
     This is in-process and blocks until finished. No external window.
     Returns True if playback succeeded.
@@ -62,6 +62,12 @@ def _windows_play_mci(path: str, verbose: bool = True) -> bool:
         # Open with alias, then play and wait, then close
         mci(f'open "{path}" type mpegvideo alias {alias}', None, 0, None)
         try:
+            # Attempt to set playback speed (1000 is normal). Ignore if unsupported.
+            try:
+                speed = max(100, min(4000, int(1000 * float(speed_multiplier))))
+                mci(f'set {alias} speed {speed}', None, 0, None)
+            except Exception:
+                pass
             # 'wait' makes it blocking
             mci(f'play {alias} wait', None, 0, None)
         finally:
@@ -88,7 +94,7 @@ def _convert_mp3_to_wav_ffmpeg(mp3_path: str, verbose: bool = True) -> Optional[
             wav_path = tmp.name
         if verbose:
             print("Convirtiendo MP3 a WAV (ffmpeg)…")
-        # -y overwrite, PCM S16LE 16k mono is compatible with winsound
+        # -y overwrite, PCM S16LE mono
         cmd = [
             "ffmpeg",
             "-y",
@@ -112,10 +118,25 @@ def _convert_mp3_to_wav_ffmpeg(mp3_path: str, verbose: bool = True) -> Optional[
         return None
 
 
-def play_mp3(path: str, verbose: bool = True, prefer_inprocess: bool = False) -> bool:
+    # Deprecated: pitch-preserving speed change no longer needed (Edge TTS supports rate directly)
+
+
+def _normalize_langs(langs) -> str:
+    return ""
+
+
+def _guess_gender_from_voice(voice) -> Optional[str]:
+    return None
+
+
+def play_mp3(path: str, verbose: bool = True, prefer_inprocess: bool = True, speed_multiplier: float = 1.0) -> bool:
     """Play an MP3 file cross-platform.
     Returns True if playback was blocking (safe to delete immediately), False if non-blocking.
     """
+    # All inputs are pre-generated with desired rate; play as-is
+    def _cleanup_stretched():
+        return None
+
     # If user prefers in-process/no-window playback, try those first
     if prefer_inprocess:
         # 1) playsound (pure Python, blocking, no window)
@@ -124,14 +145,15 @@ def play_mp3(path: str, verbose: bool = True, prefer_inprocess: bool = False) ->
 
             if verbose:
                 print("Reproduciendo (playsound)…")
+            # playsound doesn't change speed; still OK as fallback
             playsound(path)
             return True
         except Exception:
             pass
 
-        # 2) Windows: MCI (no external window)
+        # 2) Windows: MCI (no external window). Speed set via atempo above, so play at normal rate.
         if platform.system() == "Windows":
-            if _windows_play_mci(path, verbose=verbose):
+            if _windows_play_mci(path, verbose=verbose, speed_multiplier=1.0):
                 return True
 
             # 3) Try converting to WAV and use winsound (still in-process)
@@ -156,7 +178,7 @@ def play_mp3(path: str, verbose: bool = True, prefer_inprocess: bool = False) ->
                 pass
 
         # If we get here with prefer_inprocess=True, avoid opening external apps
-        print("No se pudo reproducir en proceso. Instala 'playsound==1.2.2' o agrega ffmpeg al PATH, o ejecuta sin --no-window.")
+        print("No se pudo reproducir en proceso. Instala 'playsound==1.2.2'.")
         return False
 
     sysname = platform.system()
@@ -191,6 +213,7 @@ def play_mp3(path: str, verbose: bool = True, prefer_inprocess: bool = False) ->
             except Exception:
                 pass
         elif sysname == "Darwin":  # macOS
+            # Try speed if available
             subprocess.run(["afplay", path], check=True)
             return True
         else:  # Linux/other
@@ -202,7 +225,8 @@ def play_mp3(path: str, verbose: bool = True, prefer_inprocess: bool = False) ->
                 try:
                     blocking = cmd[0] not in ("xdg-open",)
                     subprocess.run(cmd, check=True)
-                    return blocking
+                    if blocking:
+                        return blocking
                 except Exception:
                     continue
     except Exception:
@@ -213,15 +237,37 @@ def play_mp3(path: str, verbose: bool = True, prefer_inprocess: bool = False) ->
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Console TTS (gTTS)")
-    parser.add_argument("--lang", default="es", help="Idioma (por defecto: es)")
-    parser.add_argument("--tld", default="com", help="TLD para acento regional (p.ej. com.mx, es)")
-    parser.add_argument("--slow", action="store_true", help="Hablar más despacio")
-    parser.add_argument("--keep", action="store_true", help="Mantener el archivo temporal generado")
-    parser.add_argument("--no-window", action="store_true", help="Preferir reproducción en proceso (sin abrir otro programa)")
-    args = parser.parse_args()
+    # Fixed configuration: Edge TTS only, male Spanish voice, prefer Ecuador
+    EDGE_RATE = "+25%"
 
-    print(f"TTS listo. Idioma={args.lang}, tld={args.tld}, slow={args.slow}")
+    # Resolve a valid male Spanish voice at startup
+    try:
+        import asyncio
+        import edge_tts  # type: ignore
+
+        def pick_edge_voice() -> str:
+            async def inner() -> str:
+                voices = await edge_tts.list_voices()
+                prefs = ["es-EC", "es-MX", "es-CO", "es-PE", "es-ES", "es-AR", "es-US"]
+                male_es = [v for v in voices if str(v.get("Locale", "")).startswith("es") and str(v.get("Gender", "")).lower() == "male"]
+                # Sort by preferred locales
+                rank = {loc: i for i, loc in enumerate(prefs)}
+                def score(v):
+                    loc = str(v.get("Locale", ""))
+                    return rank.get(loc, 999)
+                male_es.sort(key=score)
+                if not male_es:
+                    raise RuntimeError("No hay voces masculinas en español disponibles en Edge TTS.")
+                return str(male_es[0].get("ShortName"))
+            return asyncio.run(inner())
+
+        EDGE_VOICE = pick_edge_voice()
+    except Exception as e:
+        print("Edge TTS no está instalado o no se pudo obtener la lista de voces. Instala con: pip install edge-tts")
+        print(f"Detalle: {e}")
+        return 1
+
+    print(f"TTS (Edge) listo. Voz={EDGE_VOICE}, rate={EDGE_RATE}")
     print("Escribe texto y presiona Enter. Vacío para salir. (también: 'salir', 'exit', 'q')\n")
 
     while True:
@@ -235,23 +281,64 @@ def main() -> int:
             print("Saliendo…")
             break
 
+        # Edge TTS (male Spanish Ecuador) REQUIRED
         try:
-            tts = gTTS(text=text, lang=args.lang, tld=args.tld, slow=args.slow)
-            # Use a temp file; on Windows keep it if playback is non-blocking
+            import asyncio
+            import edge_tts  # type: ignore
+
+            # We'll try up to 3 voices: the chosen one and two alternates from the male Spanish set
             with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:
                 tmp_path = tmp.name
-            tts.save(tmp_path)
 
-            blocking = play_mp3(tmp_path, prefer_inprocess=args.no_window)
-            if blocking and not args.keep:
+            async def list_male_es():
+                voices = await edge_tts.list_voices()
+                prefs = ["es-EC", "es-MX", "es-CO", "es-PE", "es-ES", "es-AR", "es-US"]
+                male_es = [v for v in voices if str(v.get("Locale", "")).startswith("es") and str(v.get("Gender", "")).lower() == "male"]
+                rank = {loc: i for i, loc in enumerate(prefs)}
+                def score(v):
+                    loc = str(v.get("Locale", ""))
+                    return rank.get(loc, 999)
+                male_es.sort(key=score)
+                return [str(v.get("ShortName")) for v in male_es]
+
+            voices_try = [EDGE_VOICE]
+            try:
+                more = asyncio.run(list_male_es())
+                # Deduplicate and keep order
+                seen = set(voices_try)
+                for v in more:
+                    if v not in seen:
+                        voices_try.append(v)
+                        seen.add(v)
+                voices_try = voices_try[:3]
+            except Exception:
+                pass
+
+            last_err = None
+            for vname in voices_try:
                 try:
-                    os.remove(tmp_path)
-                except OSError:
-                    pass
-            else:
-                print(f"Archivo: {tmp_path}")
+                    async def synth_edge():
+                        communicate = edge_tts.Communicate(text, voice=vname, rate=EDGE_RATE)
+                        await communicate.save(tmp_path)
+                    asyncio.run(synth_edge())
+                    _ = play_mp3(tmp_path, prefer_inprocess=True, speed_multiplier=1.0)
+                    try:
+                        os.remove(tmp_path)
+                    except OSError:
+                        print(f"Archivo: {tmp_path}")
+                    last_err = None
+                    break
+                except Exception as e2:
+                    last_err = e2
+                    continue
+
+            if last_err is not None:
+                raise last_err
+
         except Exception as e:
-            print(f"Error de TTS: {e}")
+            print("Edge TTS falló al sintetizar audio. Verifica conexión y parámetros.")
+            print(f"Detalle: {e}")
+            return 1
 
     return 0
 

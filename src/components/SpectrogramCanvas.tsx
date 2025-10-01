@@ -5,10 +5,11 @@ type Props = {
     height?: number
     barColor?: string
     background?: string
+    idleBaseline?: boolean
 }
 
 // Lightweight offline waveform visualizer using Web Audio AnalyserNode
-export function SpectrogramCanvas({ analyserRef, height = 500, barColor = '#ffffff', background = '#16a34a' }: Props) {
+export function SpectrogramCanvas({ analyserRef, height = 500, barColor = '#ffffffff', background = 'hsla(245, 69%, 58%, 1.00)', idleBaseline = false }: Props) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const rafRef = useRef<number | null>(null)
     const prevHeightsRef = useRef<Float32Array | null>(null)
@@ -59,8 +60,10 @@ export function SpectrogramCanvas({ analyserRef, height = 500, barColor = '#ffff
                 ctx.fillStyle = background
                 ctx.fillRect(0, 0, w, h)
                 const centerY = h / 2
-                ctx.fillStyle = barColor
-                ctx.fillRect(0, Math.max(0, centerY - 1), w, 2)
+                if (idleBaseline) {
+                    ctx.fillStyle = barColor
+                    ctx.fillRect(0, Math.max(0, centerY - 1), w, 2)
+                }
                 rafRef.current = requestAnimationFrame(render)
                 return
             }
