@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Input } from "@/components/ui/input"
 import { Button } from '@/components/ui/button'
-import { DynamicTable } from "@/components/dynamic-table"
 import type { Form, Observation } from "@/types"
 
 export const Route = createFileRoute('/')({
@@ -22,7 +21,7 @@ function RouteComponent() {
     ] as const
 
     return (
-        <div className='flex flex-col gap-3 p-3 max-w-3xl mx-auto'>
+        <div className='flex flex-col w-full gap-1 p-1'>
             <div className='flex flex-col gap-2'>
                 {fields.map((f) => (
                     <Input
@@ -56,13 +55,11 @@ function RouteComponent() {
 
                     // Keep location; clear only observation inputs
                     setForm((prev) => ({ ...prev, estado: '', cantidad: '' }))
+                    localStorage.setItem("observaciones", JSON.stringify(observaciones));
                 }}
             >
                 Agregar observación
             </Button>
-
-            <div className='text-sm font-medium'>Observaciones</div>
-            <DynamicTable data={observaciones} />
         </div>
     )
 }
