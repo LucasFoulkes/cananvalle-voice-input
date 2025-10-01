@@ -27,7 +27,7 @@ export function SquareTile({
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button
-                    className={['relative grid place-items-center text-center uppercase', className].filter(Boolean).join(' ')}
+                    className={['relative grid place-items-center text-center', className].filter(Boolean).join(' ')}
                     onClick={() => {
                         setValue('')
                         setOpen(true)

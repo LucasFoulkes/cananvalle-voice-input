@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useMemo, useState } from 'react'
 import type { Form } from "@/types"
 import { SquareTile } from '@/components/square-tile'
+import { CommandInput } from "@/components/command-input"
 
 export const Route = createFileRoute('/')({
     component: RouteComponent,
@@ -11,9 +12,10 @@ function RouteComponent() {
     const [form, setForm] = useState<Form>({ finca: '', bloque: '', cama: '', estado: '', cantidad: '' })
     // dialog state managed by SquareTile
     const [rev, setRev] = useState(0)
+    // command input moved into component
 
     const fields = [
-        // { key: 'finca', placeholder: 'Finca' },
+        { key: 'finca', placeholder: 'Finca' },
         { key: 'bloque', placeholder: 'Bloque' },
         { key: 'cama', placeholder: 'Cama' },
     ] as const
@@ -28,41 +30,54 @@ function RouteComponent() {
 
     // Totals per stage from persisted observations
     const stageTotals = useMemo(() => {
+        // If no selection at all, show zeros by returning an empty map
+        if (!form.finca && !form.bloque && !form.cama) {
+            return new Map<string, number>()
+        }
         try {
-            const arr: Array<{ estado: string; cantidad: number }> = JSON.parse(localStorage.getItem('observaciones') || '[]')
+            type Row = { estado: string; cantidad: number; finca?: string; bloque?: string; cama?: string }
+            const arr: Row[] = JSON.parse(localStorage.getItem('observaciones') || '[]')
             const map = new Map<string, number>()
-            for (const { estado, cantidad } of arr) {
+            for (const { estado, cantidad, finca, bloque, cama } of arr) {
+                // Filter by current selection; only compare non-empty form fields
+                if (form.finca && finca !== form.finca) continue
+                if (form.bloque && bloque !== form.bloque) continue
+                if (form.cama && cama !== form.cama) continue
                 map.set(estado, (map.get(estado) ?? 0) + Number(cantidad || 0))
             }
             return map
         } catch {
             return new Map<string, number>()
         }
-    }, [rev])
+    }, [rev, form.finca, form.bloque, form.cama])
 
     return (
         <div className='flex flex-col w-full gap-1 pt-1'>
-            <div className='h-32 bg-blue-600 rounded-lg'> </div>
-            <div className='flex flex-row items-stretch gap-1'>
-                <div className='flex-1'>
-                    <SquareTile
-                        label='Finca'
-                        valueText={form.finca || '-'}
-                        inputType='text'
-                        onSave={(val) => setForm((prev) => ({ ...prev, finca: val }))}
-                        className='w-full h-full aspect-square bg-lime-500 text-black'
-                    />
-                </div>
+            <CommandInput
+                className='h-32 bg-blue-600 roundedlg border-none'
+                form={form}
+                onFormChange={setForm}
+                onSaved={() => setRev((x) => x + 1)}
+            />
+            <div className='flex flex-row gap-1'>
                 {fields.map((f) => (
-                    <div key={f.key} className='w-1/4'>
-                        <SquareTile
-                            label={f.placeholder}
-                            valueText={(form as any)[f.key] || '-'}
-                            inputType='text'
-                            onSave={(val) => setForm((prev) => ({ ...prev, [f.key]: val }))}
-                            className='bg-lime-500 text-black w-full h-full'
-                        />
-                    </div>
+                    <SquareTile
+                        key={f.key}
+                        label={f.placeholder}
+                        valueText={(form as any)[f.key] || '-'}
+                        inputType='text'
+                        onSave={(val) => setForm((prev) => {
+                            // Cascading resets when changing location via tiles
+                            if (f.key === 'finca') {
+                                return { ...prev, finca: val, bloque: '', cama: '' }
+                            }
+                            if (f.key === 'bloque') {
+                                return { ...prev, bloque: val, cama: '' }
+                            }
+                            return { ...prev, [f.key]: val } as Form
+                        })}
+                        className='h-full aspect-square flex-1 bg-lime-500 text-black'
+                    />
                 ))}
             </div>
             <div className='grid grid-cols-3 gap-1'>
