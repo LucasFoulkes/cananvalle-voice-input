@@ -1,5 +1,5 @@
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
-import { VoiceProvider } from '@/state/VoiceContext'
+import { AppProvider } from '@/state/AppContext'
 import { Mic, ListOrdered, Settings, BookOpen } from 'lucide-react'
 
 const navItems = [
@@ -13,12 +13,12 @@ const navItems = [
 export const Route = createRootRoute({
   component: () => {
     return (
-      <VoiceProvider>
+      <AppProvider>
         <div className='h-screen flex flex-col bg-black overflow-hidden'>
           <div className='flex-1 overflow-hidden'>
             <Outlet />
           </div>
-          <nav className="py-4 flex bg-indigo-500 pb-8 justify-between justify-center mx-1 rounded-t-2xl shadow-lg">
+          <nav className="py-4 flex bg-indigo-500 pb-8 justify-center mx-1 rounded-t-2xl shadow-lg">
             {navItems.map((item) => (
               <Link
                 key={item.to}
@@ -33,7 +33,7 @@ export const Route = createRootRoute({
             ))}
           </nav>
         </div>
-      </VoiceProvider>
+      </AppProvider>
     )
   },
 })

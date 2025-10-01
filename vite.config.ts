@@ -18,7 +18,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
-        enabled: true,
+        enabled: false, // Disable in dev to avoid warnings
       },
       manifest: {
         name: 'Rose Tracker',

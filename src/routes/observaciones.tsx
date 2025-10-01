@@ -1,23 +1,32 @@
 import React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useVoiceDispatch, useVoiceState } from '@/state/VoiceContext'
-import { useMemo, useState } from 'react'
-import { vocabulary } from '@/utils/vocabulary'
+import { useMemo, useState, useEffect } from 'react'
+import { vocabulary } from '@/shared/vocabulary'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { deleteObservationsByAt, getAllObservations } from '@/db/observations'
+import { getAllObservations, deleteObservation, type Observation } from '@/db/database'
 
 export const Route = createFileRoute('/observaciones')({
     component: Observaciones,
 })
 
 function Observaciones() {
-    const { observations } = useVoiceState()
-    const dispatch = useVoiceDispatch()
-    const stages = vocabulary.stages
+    const [observations, setObservations] = useState<Observation[]>([])
     const [expanded, setExpanded] = useState<Set<string>>(() => new Set())
+    const stages = vocabulary.stages
 
+    // Load observations from DB
+    const loadObservations = async () => {
+        const obs = await getAllObservations()
+        setObservations(obs)
+    }
+
+    useEffect(() => {
+        loadObservations()
+    }, [])
+
+    // Group observations by location and date
     const groups = useMemo(() => {
         const dateKey = (ms: number) => {
             const d = new Date(ms)
@@ -26,6 +35,7 @@ function Observaciones() {
             const da = String(d.getDate()).padStart(2, '0')
             return `${y}-${m}-${da}`
         }
+
         type Row = {
             key: string
             finca: string
@@ -33,8 +43,9 @@ function Observaciones() {
             cama: string
             day: string
             totals: Record<string, number>
-            items: typeof observations
+            items: Observation[]
         }
+
         const map = new Map<string, Row>()
         for (const o of observations) {
             const day = dateKey(o.at)
@@ -59,9 +70,13 @@ function Observaciones() {
                 row.totals[o.stage] = (row.totals[o.stage] ?? 0) + o.value
             }
         }
+
         // Sort by finca, bloque, cama, then day desc (most recent first)
         return Array.from(map.values()).sort((a, b) =>
-            a.finca.localeCompare(b.finca) || a.bloque.localeCompare(b.bloque) || a.cama.localeCompare(b.cama) || b.day.localeCompare(a.day)
+            a.finca.localeCompare(b.finca) ||
+            a.bloque.localeCompare(b.bloque) ||
+            a.cama.localeCompare(b.cama) ||
+            b.day.localeCompare(a.day)
         )
     }, [observations, stages])
 
@@ -89,12 +104,11 @@ function Observaciones() {
                             <TableHead className='text-gray-100 text-xs'>Fi</TableHead>
                             <TableHead className='text-gray-100 text-xs'>Bl</TableHead>
                             <TableHead className='text-gray-100 text-xs'>Ca</TableHead>
-                            {stages.map((s) => {
-                                const abbr2 = s.slice(0, 2).toUpperCase()
-                                return (
-                                    <TableHead key={s} className='text-gray-100 text-xs'>{abbr2}</TableHead>
-                                )
-                            })}
+                            {stages.map((s) => (
+                                <TableHead key={s} className='text-gray-100 text-xs'>
+                                    {s.slice(0, 2).toUpperCase()}
+                                </TableHead>
+                            ))}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -108,12 +122,14 @@ function Observaciones() {
                             groups.map((g) => (
                                 <React.Fragment key={g.key}>
                                     <TableRow className='cursor-pointer' onClick={() => toggle(g.key)}>
-                                        <TableCell className='text-gray-200 text-xs'>{g.day}</TableCell>
+                                        <TableCell className='text-gray-200 text-xs'>{g.day.slice(-5)}</TableCell>
                                         <TableCell className='text-gray-200 text-xs'>{ab2(g.finca)}</TableCell>
                                         <TableCell className='text-gray-200 text-xs'>{ab2(g.bloque)}</TableCell>
                                         <TableCell className='text-gray-200 text-xs'>{ab2(g.cama)}</TableCell>
                                         {stages.map((s) => (
-                                            <TableCell key={`${g.key}-${s}`} className='text-gray-200 text-xs'>{g.totals[s] ?? 0}</TableCell>
+                                            <TableCell key={`${g.key}-${s}`} className='text-gray-200 text-xs'>
+                                                {g.totals[s] || 0}
+                                            </TableCell>
                                         ))}
                                     </TableRow>
                                     {expanded.has(g.key) && (
@@ -125,7 +141,7 @@ function Observaciones() {
                                                         <table className='w-full text-left text-xs'>
                                                             <thead>
                                                                 <tr className='text-gray-300'>
-                                                                    <th className='px-2 py-1'>Fecha/Hora</th>
+                                                                    <th className='px-2 py-1'>Hora</th>
                                                                     <th className='px-2 py-1'>Etapa</th>
                                                                     <th className='px-2 py-1'>Cantidad</th>
                                                                     <th className='px-2 py-1 text-right'>Acciones</th>
@@ -136,15 +152,19 @@ function Observaciones() {
                                                                     .slice()
                                                                     .sort((a, b) => b.at - a.at)
                                                                     .map((o, idx) => (
-                                                                        <tr key={`${o.at}-${o.stage}-${o.value}-${idx}`}>
-                                                                            <td className='px-2 py-1'>{new Date(o.at).toLocaleString()}</td>
-                                                                            <td className='px-2 py-1 capitalize'>{String(o.stage).slice(0, 2).toUpperCase()}</td>
+                                                                        <tr key={`${o.id ?? 'noid'}-${idx}`}>
+                                                                            <td className='px-2 py-1'>
+                                                                                {new Date(o.at).toLocaleTimeString()}
+                                                                            </td>
+                                                                            <td className='px-2 py-1 capitalize'>
+                                                                                {o.stage}
+                                                                            </td>
                                                                             <td className='px-2 py-1'>{o.value}</td>
                                                                             <td className='px-2 py-1 text-right'>
-                                                                                <RowDeleteButton at={o.at} onDeleted={async () => {
-                                                                                    const rows = await getAllObservations()
-                                                                                    dispatch({ type: 'hydrateObservations', items: rows.map(r => ({ at: r.at, finca: r.finca, bloque: r.bloque, cama: r.cama, stage: r.stage, value: r.value })) })
-                                                                                }} />
+                                                                                <RowDeleteButton
+                                                                                    id={o.id}
+                                                                                    onDeleted={loadObservations}
+                                                                                />
                                                                             </td>
                                                                         </tr>
                                                                     ))}
@@ -165,13 +185,17 @@ function Observaciones() {
     )
 }
 
-function RowDeleteButton({ at, onDeleted }: { at: number; onDeleted?: () => void | Promise<void> }) {
+function RowDeleteButton({ id, onDeleted }: { id?: number; onDeleted?: () => void | Promise<void> }) {
     const [open, setOpen] = useState(false)
+
     const handleConfirm = async () => {
-        await deleteObservationsByAt(at)
-        setOpen(false)
-        await onDeleted?.()
+        if (typeof id === 'number') {
+            await deleteObservation(id)
+            setOpen(false)
+            await onDeleted?.()
+        }
     }
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -189,4 +213,3 @@ function RowDeleteButton({ at, onDeleted }: { at: number; onDeleted?: () => void
         </Dialog>
     )
 }
-
