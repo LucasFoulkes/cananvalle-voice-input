@@ -17,7 +17,43 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      manifest: false,
+      devOptions: {
+        enabled: true,
+      },
+      manifest: {
+        name: 'Rose Tracker',
+        short_name: 'Roses',
+        description: 'Voice-driven rose stage tracker',
+        start_url: '/',
+        scope: '/',
+        display: 'standalone',
+        background_color: '#000000',
+        theme_color: '#34d399',
+        icons: [
+          {
+            src: '/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: '/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+          {
+            src: '/pwa-maskable-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+          {
+            src: '/pwa-maskable-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
       workbox: {
         // Allow precaching larger files like the Vosk bundle (~5.8 MB)
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
@@ -27,6 +63,8 @@ export default defineConfig({
         ],
         // Do not precache large model archives; we will runtime-cache them
         globIgnores: ['**/models/**'],
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /^\/audio\//,
@@ -54,6 +92,7 @@ export default defineConfig({
           },
         ],
       },
+      includeAssets: ['favicon.svg'],
     })
   ],
 })
