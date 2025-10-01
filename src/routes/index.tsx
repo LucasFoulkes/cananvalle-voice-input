@@ -10,7 +10,14 @@ export const Route = createFileRoute('/')({
 
 function RouteComponent() {
     const [form, setForm] = useState<Form>({ finca: '', bloque: '', cama: '', estado: '', cantidad: '' })
-    const [observaciones, setObservaciones] = useState<Observation[]>([])
+    // Initialize from localStorage to avoid overwriting existing data on first add
+    const [, setObservaciones] = useState<Observation[]>(() => {
+        try {
+            return JSON.parse(localStorage.getItem("observaciones") || "[]")
+        } catch {
+            return []
+        }
+    })
 
     const fields = [
         { key: 'finca', placeholder: 'Finca' },
@@ -41,21 +48,25 @@ function RouteComponent() {
                     if (!(Object.values(form).every((v) => v.trim() !== '') && !Number.isNaN(Number(form.cantidad)))) return
                     const cantidadNum = Number(form.cantidad)
 
-                    setObservaciones((prev) => [
-                        ...prev,
-                        {
-                            fecha: new Date().toLocaleString(),
-                            finca: form.finca,
-                            bloque: form.bloque,
-                            cama: form.cama,
-                            estado: form.estado,
-                            cantidad: cantidadNum,
-                        },
-                    ])
+                    setObservaciones((prev) => {
+                        const next: Observation[] = [
+                            ...prev,
+                            {
+                                fecha: new Date().toLocaleString(),
+                                finca: form.finca,
+                                bloque: form.bloque,
+                                cama: form.cama,
+                                estado: form.estado,
+                                cantidad: cantidadNum,
+                            },
+                        ]
+                        // Persist exactly the new value; avoids stale state write
+                        localStorage.setItem("observaciones", JSON.stringify(next))
+                        return next
+                    })
 
                     // Keep location; clear only observation inputs
                     setForm((prev) => ({ ...prev, estado: '', cantidad: '' }))
-                    localStorage.setItem("observaciones", JSON.stringify(observaciones));
                 }}
             >
                 Agregar observación
