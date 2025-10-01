@@ -1,98 +1,47 @@
-import path from "path"
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
+import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from "path"
+import tailwindcss from "@tailwindcss/vite"
+import { tanstackRouter } from '@tanstack/router-plugin/vite'
 
+// https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [tanstackRouter({
+    target: 'react',
+    autoCodeSplitting: true,
+  }), react(), tailwindcss(), VitePWA({
+    registerType: 'autoUpdate',
+    injectRegister: false,
+
+    pwaAssets: {
+      disabled: false,
+      config: true,
+    },
+
+    manifest: {
+      name: 'rose-tracker',
+      short_name: 'rose-tracker',
+      description: 'rose-tracker',
+      theme_color: '#ffffff',
+    },
+
+    workbox: {
+      globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+      cleanupOutdatedCaches: true,
+      clientsClaim: true,
+    },
+
+    devOptions: {
+      enabled: false,
+      navigateFallback: 'index.html',
+      suppressWarnings: true,
+      type: 'module',
+    },
+  })],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  plugins: [
-    TanStackRouterVite(),
-    react(),
-    tailwindcss(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      devOptions: {
-        enabled: false, // Disable in dev to avoid warnings
-      },
-      manifest: {
-        name: 'Rose Tracker',
-        short_name: 'Roses',
-        description: 'Voice-driven rose stage tracker',
-        start_url: '/',
-        scope: '/',
-        display: 'standalone',
-        background_color: '#000000',
-        theme_color: '#6366f1',
-        icons: [
-          {
-            src: '/pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: '/pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-          {
-            src: '/pwa-maskable-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
-          {
-            src: '/pwa-maskable-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
-        ],
-      },
-      workbox: {
-        // Allow precaching larger files like the Vosk bundle (~5.8 MB)
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
-        // Precache typical assets plus audio clips
-        globPatterns: [
-          '**/*.{js,css,html,ico,png,svg,mp3,wav,ogg}'
-        ],
-        // Do not precache large model archives; we will runtime-cache them
-        globIgnores: ['**/models/**'],
-        skipWaiting: true,
-        clientsClaim: true,
-        runtimeCaching: [
-          {
-            urlPattern: /^\/audio\//,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'audio-assets',
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-              },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: /^\/models\//,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'vosk-models',
-              expiration: {
-                maxEntries: 5,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-              },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
-      },
-      includeAssets: ['favicon.svg'],
-    })
-  ],
 })
