@@ -1,112 +1,144 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useMemo, useState } from 'react'
-import type { Form } from "@/types"
-import { SquareTile } from '@/components/square-tile'
-import { CommandInput } from "@/components/command-input"
+import { useCallback, useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import type { Observation } from '@/types'
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
+import { useVosk } from '@/hooks/useVosk'
+import TileButton from '@/components/TileButton'
+import { interpretVoiceText } from '@/lib/commandEngine'
 
 export const Route = createFileRoute('/')({
     component: RouteComponent,
 })
 
 function RouteComponent() {
-    const [form, setForm] = useState<Form>({ finca: '', bloque: '', cama: '', estado: '', cantidad: '' })
-    // dialog state managed by SquareTile
-    const [rev, setRev] = useState(0)
-    // command input moved into component
 
-    const fields = [
-        { key: 'finca', placeholder: 'Finca' },
-        { key: 'bloque', placeholder: 'Bloque' },
-        { key: 'cama', placeholder: 'Cama' },
-    ] as const
+    const [finca, setFinca] = useState('')
+    const [bloque, setBloque] = useState('')
+    const [cama, setCama] = useState('')
+    const [observaciones, setObservaciones] = useState<Observation[]>([])
+    const [command, setCommand] = useState('')
+    const [pendingEstado, setPendingEstado] = useState<{ estado: string, cantidad: number } | null>(null)
 
-    const stages = [
-        { key: 'arroz', label: 'Arroz' },
-        { key: 'arveja', label: 'Arveja' },
-        { key: 'garbanzo', label: 'Garbanzo' },
-        { key: 'color', label: 'Color' },
-        { key: 'abiertos', label: 'Abiertos' },
-    ] as const
-
-    // Totals per stage from persisted observations
-    const stageTotals = useMemo(() => {
-        // If no selection at all, show zeros by returning an empty map
-        if (!form.finca && !form.bloque && !form.cama) {
-            return new Map<string, number>()
+    // Auto-apply pending estado when context completes
+    useEffect(() => {
+        if (pendingEstado && finca && bloque && cama) {
+            setObservaciones(prev => [...prev, {
+                fecha: new Date().toISOString(),
+                finca, bloque, cama,
+                estado: pendingEstado.estado,
+                cantidad: pendingEstado.cantidad,
+            }])
+            setPendingEstado(null)
+            setCommand('')
         }
-        try {
-            type Row = { estado: string; cantidad: number; finca?: string; bloque?: string; cama?: string }
-            const arr: Row[] = JSON.parse(localStorage.getItem('observaciones') || '[]')
-            const map = new Map<string, number>()
-            for (const { estado, cantidad, finca, bloque, cama } of arr) {
-                // Filter by current selection; only compare non-empty form fields
-                if (form.finca && finca !== form.finca) continue
-                if (form.bloque && bloque !== form.bloque) continue
-                if (form.cama && cama !== form.cama) continue
-                map.set(estado, (map.get(estado) ?? 0) + Number(cantidad || 0))
+    }, [pendingEstado, finca, bloque, cama])
+
+    const onVoiceText = useCallback((text: string, isFinal: boolean) => {
+        if (!isFinal) return
+        const { buffer, event } = interpretVoiceText(command, text)
+        setCommand(buffer)
+
+        if (!event) return
+
+        if (event.type === 'context') {
+            if (event.key === 'finca') {
+                setFinca(String(event.value))
+                setBloque('')
+                setCama('')
+            } else if (event.key === 'bloque') {
+                setBloque(String(event.value))
+                setCama('')
+            } else if (event.key === 'cama') {
+                setCama(String(event.value).padStart(2, '0'))
             }
-            return map
-        } catch {
-            return new Map<string, number>()
+            setCommand('')
+            return
         }
-    }, [rev, form.finca, form.bloque, form.cama])
+
+        if (event.type === 'estado') {
+            if (finca && bloque && cama) {
+                setObservaciones(prev => [...prev, {
+                    fecha: new Date().toISOString(),
+                    finca, bloque, cama,
+                    estado: event.estado,
+                    cantidad: Number(event.cantidad)
+                }])
+            } else {
+                setPendingEstado({ estado: event.estado, cantidad: Number(event.cantidad) })
+            }
+            setCommand('')
+        }
+    }, [command, finca, bloque, cama])
+
+    const { isListening, start, stop, partialTranscript, transcript } = useVosk({ onResult: onVoiceText })
+
+    // Today's sums for selected location
+    const sums = observaciones.reduce((acc, o) => {
+        if (o.finca === finca && o.bloque === bloque && o.cama === cama &&
+            new Date(o.fecha).toDateString() === new Date().toDateString()) {
+            if (o.estado in acc) acc[o.estado as keyof typeof acc] += o.cantidad
+        }
+        return acc
+    }, { arroz: 0, arveja: 0, garbanzo: 0, color: 0, abierto: 0 })
 
     return (
-        <div className='flex flex-col w-full gap-1 pt-1'>
-            <CommandInput
-                className='h-32 bg-blue-600 roundedlg border-none'
-                form={form}
-                onFormChange={setForm}
-                onSaved={() => setRev((x) => x + 1)}
-            />
-            <div className='flex flex-row gap-1'>
-                {fields.map((f) => (
-                    <SquareTile
-                        key={f.key}
-                        label={f.placeholder}
-                        valueText={(form as any)[f.key] || '-'}
-                        inputType='text'
-                        onSave={(val) => setForm((prev) => {
-                            // Cascading resets when changing location via tiles
-                            if (f.key === 'finca') {
-                                return { ...prev, finca: val, bloque: '', cama: '' }
-                            }
-                            if (f.key === 'bloque') {
-                                return { ...prev, bloque: val, cama: '' }
-                            }
-                            return { ...prev, [f.key]: val } as Form
-                        })}
-                        className='h-full aspect-square flex-1 bg-lime-500 text-black'
-                    />
-                ))}
-            </div>
+        <div className='flex flex-col gap-1 p-1 h-full'>
+            <Button
+                className='w-full h-24 text-left text-2xl bg-blue-500 text-white border-none px-3'
+                onClick={isListening ? stop : start}
+            >
+                <div className='w-full'>
+                    <div className='truncate'>
+                        {isListening ? (partialTranscript || 'Hable') : (transcript || 'Toca para hablar…')}
+                    </div>
+                </div>
+            </Button>
             <div className='grid grid-cols-3 gap-1'>
-                {stages.map((s) => (
-                    <SquareTile
-                        key={s.key}
-                        label={s.label}
-                        valueText={<span className='text-xl font-semibold'>{stageTotals.get(s.key) ?? 0}</span>}
-                        inputType='number'
-                        onSave={(val) => {
-                            const n = Number(val)
-                            const next = [
-                                ...JSON.parse(localStorage.getItem('observaciones') || '[]'),
-                                {
-                                    fecha: new Date().toLocaleString(),
-                                    finca: form.finca,
-                                    bloque: form.bloque,
-                                    cama: form.cama,
-                                    estado: s.key,
-                                    cantidad: n,
-                                },
-                            ]
-                            localStorage.setItem('observaciones', JSON.stringify(next))
-                            setRev((x) => x + 1)
-                        }}
-                        className='aspect-square h-full'
-                    />
-                ))}
+                <TileButton label='FINCA' value={finca || '-'} square />
+                <TileButton label='BLOQUE' value={bloque || '-'} square labelClassName='relative top-1' />
+                <TileButton label='CAMA' value={cama || '-'} square />
             </div>
-        </div>
+            <div className='grid grid-cols-2 gap-1'>
+                <TileButton label='ARROZ' value={sums.arroz} />
+                <TileButton label='ARVEJA' value={sums.arveja} />
+                <TileButton label='GARBANZO' value={sums.garbanzo} />
+                <TileButton label='COLOR' value={sums.color} />
+                <TileButton label='ABIERTO' value={sums.abierto} />
+            </div>
+            <div className='overflow-hidden bg-zinc-900 flex flex-1 flex-col h-full p-1 rounded-lg h-full'>
+                <Table>
+                    <TableHeader>
+                        <TableRow className='capitalize'>
+                            <TableHead className='text-white'>fecha</TableHead>
+                            <TableHead className='text-white'>finca</TableHead>
+                            <TableHead className='text-white'>bloque</TableHead>
+                            <TableHead className='text-white'>cama</TableHead>
+                            <TableHead className='text-white'>estado</TableHead>
+                            <TableHead className='text-white'>#</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {observaciones.map((o, i) => (
+                            <TableRow key={`${o.fecha}-${i}`} className='capitalize'>
+                                <TableCell>{new Date(o.fecha).toLocaleString()}</TableCell>
+                                <TableCell>{o.finca}</TableCell>
+                                <TableCell>{o.bloque}</TableCell>
+                                <TableCell>{o.cama}</TableCell>
+                                <TableCell>{o.estado}</TableCell>
+                                <TableCell>{o.cantidad}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        </div >
     )
 }

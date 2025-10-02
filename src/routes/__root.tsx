@@ -15,7 +15,7 @@ function RootComponent() {
   ] as const
   return (
     <React.Fragment>
-      <div className='h-screen  grid grid-rows-[1fr_auto] bg-black text-white px-1'>
+      <div className='h-screen  grid grid-rows-[1fr_auto] bg-black text-white '>
         <main className='min-h-0 overflow-y-auto'>
           <Outlet />
         </main>
