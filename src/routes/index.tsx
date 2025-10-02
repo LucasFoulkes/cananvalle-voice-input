@@ -96,16 +96,6 @@ function RouteComponent() {
 
     return (
         <div className='flex flex-col gap-1 p-1 h-full'>
-            <Button
-                className='w-full h-24 text-left text-2xl bg-blue-500 text-white border-none px-3'
-                onClick={isListening ? stop : start}
-            >
-                <div className='w-full'>
-                    <div className='truncate'>
-                        {isListening ? (partialTranscript || 'Hable') : (transcript || 'Toca para hablar…')}
-                    </div>
-                </div>
-            </Button>
             <div className='grid grid-cols-3 gap-1'>
                 <TileButton label='FINCA' value={finca || '-'} square />
                 <TileButton label='BLOQUE' value={bloque || '-'} square labelClassName='relative top-1' />
@@ -118,7 +108,16 @@ function RouteComponent() {
                 <TileButton label='COLOR' value={sums.color} />
                 <TileButton label='ABIERTO' value={sums.abierto} />
             </div>
-            {/* Table moved to /observaciones */}
+            <Button
+                className={`w-full h-24 text-left text-2xl text-white border-none px-3 flex-1 ${isListening ? 'bg-blue-500' : ''}`}
+                onClick={isListening ? stop : start}
+            >
+                <div className='w-full'>
+                    <div className='truncate'>
+                        {isListening ? (partialTranscript || 'Hable') : (transcript || 'Toca para hablar…')}
+                    </div>
+                </div>
+            </Button>
         </div >
     )
 }
