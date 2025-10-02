@@ -2,14 +2,6 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { Observation } from '@/types'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
 import { useVosk } from '@/hooks/useVosk'
 import TileButton from '@/components/TileButton'
 import { interpretVoiceText } from '@/lib/commandEngine'
@@ -23,11 +15,24 @@ function RouteComponent() {
     const [finca, setFinca] = useState('')
     const [bloque, setBloque] = useState('')
     const [cama, setCama] = useState('')
-    const [observaciones, setObservaciones] = useState<Observation[]>([])
+    const [observaciones, setObservaciones] = useState<Observation[]>(() => {
+        try {
+            const raw = localStorage.getItem('observaciones')
+            const parsed = raw ? JSON.parse(raw) : []
+            return Array.isArray(parsed) ? parsed : []
+        } catch {
+            return []
+        }
+    })
     const [command, setCommand] = useState('')
     const [pendingEstado, setPendingEstado] = useState<{ estado: string, cantidad: number } | null>(null)
 
-    // Auto-apply pending estado when context completes
+    useEffect(() => {
+        try {
+            localStorage.setItem('observaciones', JSON.stringify(observaciones))
+        } catch { /* ignore */ }
+    }, [observaciones])
+
     useEffect(() => {
         if (pendingEstado && finca && bloque && cama) {
             setObservaciones(prev => [...prev, {
@@ -113,32 +118,7 @@ function RouteComponent() {
                 <TileButton label='COLOR' value={sums.color} />
                 <TileButton label='ABIERTO' value={sums.abierto} />
             </div>
-            <div className='overflow-hidden bg-zinc-900 flex flex-1 flex-col h-full p-1 rounded-lg h-full'>
-                <Table>
-                    <TableHeader>
-                        <TableRow className='capitalize'>
-                            <TableHead className='text-white'>fecha</TableHead>
-                            <TableHead className='text-white'>finca</TableHead>
-                            <TableHead className='text-white'>bloque</TableHead>
-                            <TableHead className='text-white'>cama</TableHead>
-                            <TableHead className='text-white'>estado</TableHead>
-                            <TableHead className='text-white'>#</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {observaciones.map((o, i) => (
-                            <TableRow key={`${o.fecha}-${i}`} className='capitalize'>
-                                <TableCell>{new Date(o.fecha).toLocaleString()}</TableCell>
-                                <TableCell>{o.finca}</TableCell>
-                                <TableCell>{o.bloque}</TableCell>
-                                <TableCell>{o.cama}</TableCell>
-                                <TableCell>{o.estado}</TableCell>
-                                <TableCell>{o.cantidad}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
+            {/* Table moved to /observaciones */}
         </div >
     )
 }
