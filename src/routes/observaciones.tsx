@@ -179,7 +179,15 @@ function RouteComponent() {
     if (!camaToDelete) return
 
     const updatedObservaciones = observaciones.filter(
-      obs => !(obs.finca === camaToDelete.finca && obs.bloque === camaToDelete.bloque && obs.cama === camaToDelete.cama && obs.fecha.startsWith(camaToDelete.fecha))
+      obs => {
+        if (obs.finca !== camaToDelete.finca || obs.bloque !== camaToDelete.bloque || obs.cama !== camaToDelete.cama) {
+          return true // Keep observations from different locations
+        }
+        // Compare dates: convert obs.fecha to YYYY/MM/DD format
+        const d = new Date(obs.fecha)
+        const obsDate = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`
+        return obsDate !== camaToDelete.fecha // Keep if dates don't match
+      }
     )
     setObservaciones(updatedObservaciones)
     localStorage.setItem("observaciones", JSON.stringify(updatedObservaciones))
