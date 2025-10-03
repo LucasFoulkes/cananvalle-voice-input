@@ -106,12 +106,11 @@ function ControlCalidadComponent() {
 
   const formatDisplayDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00')
-    return date.toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
+    const dayName = date.toLocaleDateString('es-ES', { weekday: 'long' })
+    const day = date.getDate()
+    const month = date.getMonth() + 1
+    const year = date.getFullYear()
+    return `${dayName} ${day}/${month}/${year}`
   }
 
   const handleCreate = async (e: React.FormEvent) => {
