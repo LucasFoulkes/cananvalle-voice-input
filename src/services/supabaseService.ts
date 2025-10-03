@@ -26,7 +26,7 @@ export async function syncObservationToSupabase(observation: Observation) {
         precision: observation.gps.precision,
         altitud: observation.gps.altitud,
         creado_en: observation.gps.creado_en,
-        usuario_id: null
+        usuario_id: observation.gps.usuario_id
       })
       .select('id')
       .single()

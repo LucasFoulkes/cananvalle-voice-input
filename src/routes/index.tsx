@@ -9,6 +9,7 @@ import { Mic, Loader2 } from 'lucide-react'
 import { AudioVisualizer } from '@/components/AudioVisualizer'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { getCurrentUser } from '@/lib/auth'
 
 // Utility function to generate UUID
 function generateUUID(): string {
@@ -86,11 +87,13 @@ async function captureGpsLocation(): Promise<GpsLocation | null> {
             return
         }
 
+        const currentUser = getCurrentUser()
+
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const gps: GpsLocation = {
                     id: generateUUID(),
-                    usuario_id: null,
+                    usuario_id: currentUser ? String(currentUser.id_usuario) : null,
                     latitud: position.coords.latitude,
                     longitud: position.coords.longitude,
                     precision: position.coords.accuracy,

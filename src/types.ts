@@ -1,3 +1,9 @@
+export type Usuario = {
+    id_usuario: number
+    nombres: string
+    clave_pin: string
+}
+
 export type GpsLocation = {
     id: string
     usuario_id: string | null
