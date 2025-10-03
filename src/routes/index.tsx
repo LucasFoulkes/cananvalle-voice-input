@@ -19,6 +19,43 @@ function generateUUID(): string {
     })
 }
 
+// Sound feedback functions - use Web Audio API for simple tones
+const audioContext = typeof window !== 'undefined' ? new (window.AudioContext || (window as any).webkitAudioContext)() : null
+
+function playTone(frequency: number, duration: number = 100) {
+    if (!audioContext) return
+    try {
+        const oscillator = audioContext.createOscillator()
+        const gainNode = audioContext.createGain()
+
+        oscillator.connect(gainNode)
+        gainNode.connect(audioContext.destination)
+
+        oscillator.frequency.value = frequency
+        oscillator.type = 'sine'
+
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000)
+
+        oscillator.start(audioContext.currentTime)
+        oscillator.stop(audioContext.currentTime + duration / 1000)
+    } catch (e) {
+        console.warn('Audio playback failed:', e)
+    }
+}
+
+// Different tones for different command types
+const TONES = {
+    finca: 440,    // A4
+    bloque: 523,   // C5
+    cama: 659,     // E5
+    arroz: 784,    // G5
+    arveja: 880,   // A5
+    garbanzo: 988, // B5
+    color: 1047,   // C6
+    abierto: 1175  // D6
+}
+
 // Function to capture GPS location
 async function captureGpsLocation(): Promise<GpsLocation | null> {
     return new Promise((resolve) => {
@@ -141,6 +178,12 @@ function RouteComponent() {
                 console.log('DEBUG: context event', { key: event.key, value: event.value, currentLocation: location })
                 const hierarchyIndex = HIERARCHY.indexOf(event.key)
 
+                // Play tone for this location level (with slight delay for multiple commands)
+                setTimeout(() => {
+                    const tone = TONES[event.key as keyof typeof TONES]
+                    if (tone) playTone(tone)
+                }, index * 150)
+
                 // Use functional update to get the latest location state
                 setLocation(prevLocation => {
                     const newLocation = { ...prevLocation }
@@ -226,6 +269,12 @@ function RouteComponent() {
                         setCommand('')
                         return currentLocation
                     }
+
+                    // Play tone for this estado (with slight delay for multiple commands)
+                    setTimeout(() => {
+                        const tone = TONES[event.estado as keyof typeof TONES]
+                        if (tone) playTone(tone)
+                    }, index * 150)
 
                     // Capture GPS and add observation asynchronously
                     const locationSnapshot = { ...currentLocation }

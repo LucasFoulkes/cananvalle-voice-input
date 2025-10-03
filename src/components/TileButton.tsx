@@ -43,9 +43,9 @@ export function TileButton({
             className={cn(
                 'flex flex-col justify-center items-center h-fit py-1 gap-1 transition-colors duration-500 text-white',
                 square && 'aspect-square',
+                !isFlashing && isActive && 'bg-green-500 hover:bg-green-600',
+                !isFlashing && isReady && 'bg-emerald-500 hover:bg-emerald-600',
                 isFlashing && 'bg-blue-500',
-                isActive && 'bg-green-500 hover:bg-green-600',
-                isReady && 'bg-emerald-500 hover:bg-emerald-600',
                 className,
             )}
             {...buttonProps}
