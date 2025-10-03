@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
+import { Dot } from 'lucide-react'
 
 export const Route = createFileRoute('/observaciones')({
   component: RouteComponent,
@@ -123,8 +124,9 @@ function RouteComponent() {
       <Dialog open={!!selectedSummary} onOpenChange={(open) => !open && setSelectedSummary(null)}>
         <DialogContent className='bg-zinc-900 text-white border-zinc-700'>
           <DialogHeader>
-            <DialogTitle>
-              Detalles: Finca {selectedSummary?.finca} / Bloque {selectedSummary?.bloque} / Cama {selectedSummary?.cama} - {selectedSummary?.fecha}
+            <DialogTitle className='flex flex-col gap-1'>
+              <div className='flex flex-row gap-1 text-sm font-thin'><span>Finca {selectedSummary?.finca}</span><Dot /><span>Bloque {selectedSummary?.bloque}</span></div>
+              <div className='flex gap-2 text-xl'><span className='font-semibold'>Cama</span><span>{selectedSummary?.cama}</span></div>
             </DialogTitle>
           </DialogHeader>
           <div className='overflow-auto max-h-96'>
@@ -148,7 +150,7 @@ function RouteComponent() {
             </Table>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog >
     </>
   )
 }
