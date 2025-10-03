@@ -60,7 +60,7 @@ export function useVosk(options: UseVoskOptions = {}) {
             // hundreds up to 400
             ;['cien', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos'].forEach(w => words.add(w))
             // command words
-            ;['finca', 'bloque', 'cama', 'parar', 'arroz', 'arveja', 'garbanzo', 'color', 'abierto', 'a', 'b', 'c', 'd'].forEach(w => words.add(w))
+            ;['finca', 'bloque', 'cama', 'parar', 'arroz', 'arveja', 'garbanzo', 'color', 'abierto', 'borrar', 'a', 'b', 'c', 'd'].forEach(w => words.add(w))
         // unknown token
         words.add('[unk]')
         return Array.from(words)

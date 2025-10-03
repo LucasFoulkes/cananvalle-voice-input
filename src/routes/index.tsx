@@ -4,17 +4,24 @@ import { Button } from '@/components/ui/button'
 import type { Observation } from '@/types'
 import { useVosk } from '@/hooks/useVosk'
 import TileButton from '@/components/TileButton'
-import { interpretVoiceText } from '@/lib/commandEngine'
+import { interpretVoiceText, HIERARCHY } from '@/lib/commandEngine'
+
+type Location = {
+    finca: string
+    bloque: string
+    cama: string
+}
 
 export const Route = createFileRoute('/')({
     component: RouteComponent,
 })
 
 function RouteComponent() {
-
-    const [finca, setFinca] = useState('')
-    const [bloque, setBloque] = useState('')
-    const [cama, setCama] = useState('')
+    const [location, setLocation] = useState<Location>({
+        finca: '',
+        bloque: '',
+        cama: ''
+    })
     const [observaciones, setObservaciones] = useState<Observation[]>(() => {
         try {
             const raw = localStorage.getItem('observaciones')
@@ -25,7 +32,7 @@ function RouteComponent() {
         }
     })
     const [command, setCommand] = useState('')
-    const [pendingEstado, setPendingEstado] = useState<{ estado: string, cantidad: number } | null>(null)
+    const [errorMessage, setErrorMessage] = useState('')
 
     useEffect(() => {
         try {
@@ -34,60 +41,89 @@ function RouteComponent() {
     }, [observaciones])
 
     useEffect(() => {
-        if (pendingEstado && finca && bloque && cama) {
-            setObservaciones(prev => [...prev, {
-                fecha: new Date().toISOString(),
-                finca, bloque, cama,
-                estado: pendingEstado.estado,
-                cantidad: pendingEstado.cantidad,
-            }])
-            setPendingEstado(null)
-            setCommand('')
+        if (errorMessage) {
+            const timer = setTimeout(() => setErrorMessage(''), 3000)
+            return () => clearTimeout(timer)
         }
-    }, [pendingEstado, finca, bloque, cama])
+    }, [errorMessage])
 
     const onVoiceText = useCallback((text: string, isFinal: boolean) => {
         if (!isFinal) return
+
+        console.log('DEBUG: onVoiceText called', { text, command, location })
         const { buffer, event } = interpretVoiceText(command, text)
+        console.log('DEBUG: interpretVoiceText result', { buffer, event })
         setCommand(buffer)
 
         if (!event) return
 
+        // Handle location context updates using hierarchy
         if (event.type === 'context') {
-            if (event.key === 'finca') {
-                setFinca(String(event.value))
-                setBloque('')
-                setCama('')
-            } else if (event.key === 'bloque') {
-                setBloque(String(event.value))
-                setCama('')
-            } else if (event.key === 'cama') {
-                setCama(String(event.value).padStart(2, '0'))
+            console.log('DEBUG: context event', { key: event.key, value: event.value, currentLocation: location })
+            const index = HIERARCHY.indexOf(event.key)
+
+            // Use functional update to get the latest location state
+            setLocation(prevLocation => {
+                const newLocation = { ...prevLocation }
+
+                // Set the current level
+                const value = event.key === 'cama'
+                    ? String(event.value).padStart(2, '0')
+                    : String(event.value)
+                newLocation[event.key] = value
+
+                // Clear all levels after this one in the hierarchy
+                for (let i = index + 1; i < HIERARCHY.length; i++) {
+                    newLocation[HIERARCHY[i]] = ''
+                }
+
+                console.log('DEBUG: setting newLocation', newLocation)
+                return newLocation
+            })
+            setCommand('')
+            setErrorMessage('')
+            return
+        }
+
+        // Handle undo command
+        if (event.type === 'undo') {
+            if (observaciones.length > 0) {
+                setObservaciones(prev => prev.slice(0, -1))
+                setErrorMessage('')
+            } else {
+                setErrorMessage('No hay observaciones para borrar')
             }
             setCommand('')
             return
         }
 
+        // Handle estado/observation commands with upfront validation
         if (event.type === 'estado') {
-            if (finca && bloque && cama) {
+            setLocation(currentLocation => {
+                if (!HIERARCHY.every(key => currentLocation[key] !== '')) {
+                    setErrorMessage('Complete la ubicación primero (finca, bloque, cama)')
+                    setCommand('')
+                    return currentLocation
+                }
+
                 setObservaciones(prev => [...prev, {
                     fecha: new Date().toISOString(),
-                    finca, bloque, cama,
+                    ...currentLocation,
                     estado: event.estado,
                     cantidad: Number(event.cantidad)
                 }])
-            } else {
-                setPendingEstado({ estado: event.estado, cantidad: Number(event.cantidad) })
-            }
-            setCommand('')
+                setCommand('')
+                setErrorMessage('')
+                return currentLocation
+            })
         }
-    }, [command, finca, bloque, cama])
+    }, [command, observaciones.length])
 
     const { isListening, start, stop, partialTranscript, transcript } = useVosk({ onResult: onVoiceText })
 
     // Today's sums for selected location
     const sums = observaciones.reduce((acc, o) => {
-        if (o.finca === finca && o.bloque === bloque && o.cama === cama &&
+        if (o.finca === location.finca && o.bloque === location.bloque && o.cama === location.cama &&
             new Date(o.fecha).toDateString() === new Date().toDateString()) {
             if (o.estado in acc) acc[o.estado as keyof typeof acc] += o.cantidad
         }
@@ -97,9 +133,9 @@ function RouteComponent() {
     return (
         <div className='flex flex-col gap-1 p-1 h-full'>
             <div className='grid grid-cols-3 gap-1'>
-                <TileButton label='FINCA' value={finca || '-'} square />
-                <TileButton label='BLOQUE' value={bloque || '-'} square labelClassName='relative top-1' />
-                <TileButton label='CAMA' value={cama || '-'} square />
+                <TileButton label='FINCA' value={location.finca || '-'} square />
+                <TileButton label='BLOQUE' value={location.bloque || '-'} square labelClassName='relative top-1' />
+                <TileButton label='CAMA' value={location.cama || '-'} square />
             </div>
             <div className='grid grid-cols-2 gap-1'>
                 <TileButton label='ARROZ' value={sums.arroz} />
@@ -109,12 +145,12 @@ function RouteComponent() {
                 <TileButton label='ABIERTO' value={sums.abierto} />
             </div>
             <Button
-                className={`w-full h-24 text-left text-2xl text-white border-none px-3 flex-1 ${isListening ? 'bg-blue-500' : ''}`}
+                className={`w-full h-24 text-left text-2xl text-white border-none px-3 flex-1 ${isListening ? 'bg-blue-500' : ''} ${errorMessage ? 'bg-red-500' : ''}`}
                 onClick={isListening ? stop : start}
             >
                 <div className='w-full'>
                     <div className='truncate'>
-                        {isListening ? (partialTranscript || 'Hable') : (transcript || 'Toca para hablar…')}
+                        {errorMessage || (isListening ? (partialTranscript || 'Hable') : (transcript || 'Toca para hablar…'))}
                     </div>
                 </div>
             </Button>

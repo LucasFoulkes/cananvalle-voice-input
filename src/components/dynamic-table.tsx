@@ -17,7 +17,7 @@ export function DynamicTable<T extends object>({ data }: DynamicTableProps<T>) {
     return (
         <div className='overflow-hidden bg-zinc-900 flex flex-1 flex-col h-full p-1 rounded-lg'>
             <Table>
-                <TableHeader className='text-xs'>
+                <TableHeader >
                     <TableRow className='capitalize'>
                         {keys.map((k) => (
                             <TableHead key={k} className='text-white'>{k}</TableHead>
