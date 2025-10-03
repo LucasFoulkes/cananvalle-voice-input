@@ -87,11 +87,11 @@ function RouteComponent() {
   // Keep selectedSummary in sync with latest data
   const currentSelectedSummary = selectedSummary
     ? summaries.find(s =>
-        s.finca === selectedSummary.finca &&
-        s.bloque === selectedSummary.bloque &&
-        s.cama === selectedSummary.cama &&
-        s.fecha === selectedSummary.fecha
-      ) || null
+      s.finca === selectedSummary.finca &&
+      s.bloque === selectedSummary.bloque &&
+      s.cama === selectedSummary.cama &&
+      s.fecha === selectedSummary.fecha
+    ) || null
     : null
 
   const isSameObservation = (a: Observation, b: Observation) => {
@@ -145,6 +145,12 @@ function RouteComponent() {
     if (hasFailed) return 'error'
     if (someSynced) return 'partial'
     return 'none'
+  }
+
+  const getSyncProgress = (entries: Observation[]) => {
+    const total = entries.length
+    const synced = entries.filter(e => e.synced).length
+    return (synced / total) * 100
   }
 
   const getRowClassName = (status: string) => {
@@ -217,7 +223,7 @@ function RouteComponent() {
         {Object.entries(groupedByDate).map(([fecha, rows]) => (
           <div key={fecha} className='flex flex-col gap-1'>
             <h2 className='text-white text-xl text-center'>{fecha}</h2>
-            <Card className='overflow-hidden max-h-full bg-zinc-800 p-1 text-white border-none'>
+            <Card className='overflow-hidden max-h-full bg-zinc-800 p-1  text-white px-2 pb-2 text-white border-none'>
               <Table >
                 <TableHeader className='text-xs'>
                   <TableRow>
@@ -237,65 +243,74 @@ function RouteComponent() {
                 <TableBody>
                   {rows.map((row, i) => {
                     const syncStatus = getSyncStatus(row.entries)
+                    const syncProgress = getSyncProgress(row.entries)
+                    const showProgress = syncStatus === 'syncing' || (syncStatus === 'partial' && syncProgress > 0 && syncProgress < 100)
+
                     return (
-                    <TableRow
-                      key={i}
-                      className={getRowClassName(syncStatus)}
-                    >
-                      <TableCell>{row.finca}</TableCell>
-                      <TableCell>{row.bloque}</TableCell>
-                      <TableCell>{row.cama}</TableCell>
-                      <TableCell className='text-right'>{row.arroz || '-'}</TableCell>
-                      <TableCell className='text-right'>{row.arveja || '-'}</TableCell>
-                      <TableCell className='text-right'>{row.garbanzo || '-'}</TableCell>
-                      <TableCell className='text-right'>{row.color || '-'}</TableCell>
-                      <TableCell className='text-right'>{row.abierto || '-'}</TableCell>
-                      <TableCell className='text-center'>
-                        <Button
-                          variant='ghost'
-                          size='sm'
-                          className='h-6 w-6 p-0 hover:bg-blue-900/50'
-                          onClick={() => setSelectedSummary(row)}
-                        >
-                          <Maximize2 className='h-4 w-4 text-blue-400' />
-                        </Button>
-                      </TableCell>
-                      <TableCell className='text-center'>
-                        {syncStatus === 'syncing' ? (
-                          <Loader2 className='h-4 w-4 text-blue-400 mx-auto animate-spin' />
-                        ) : syncStatus === 'synced' ? (
-                          <CheckCircle className='h-4 w-4 text-green-400 mx-auto' />
-                        ) : syncStatus === 'error' ? (
-                          <Button
-                            variant='ghost'
-                            size='sm'
-                            className='h-6 w-6 p-0 hover:bg-red-900/50'
-                            onClick={() => handleSyncAllInCama(row)}
-                          >
-                            <XCircle className='h-4 w-4 text-red-400' />
-                          </Button>
-                        ) : (
+                      <TableRow
+                        key={i}
+                        className={getRowClassName(syncStatus)}
+                        style={{
+                          ...(showProgress && {
+                            background: `linear-gradient(to right, rgba(59, 130, 246, 0.3) ${syncProgress}%, transparent ${syncProgress}%)`,
+                            transition: 'background 0.3s ease'
+                          })
+                        }}
+                      >
+                        <TableCell>{row.finca}</TableCell>
+                        <TableCell>{row.bloque}</TableCell>
+                        <TableCell>{row.cama}</TableCell>
+                        <TableCell className='text-right'>{row.arroz || '-'}</TableCell>
+                        <TableCell className='text-right'>{row.arveja || '-'}</TableCell>
+                        <TableCell className='text-right'>{row.garbanzo || '-'}</TableCell>
+                        <TableCell className='text-right'>{row.color || '-'}</TableCell>
+                        <TableCell className='text-right'>{row.abierto || '-'}</TableCell>
+                        <TableCell className='text-center'>
                           <Button
                             variant='ghost'
                             size='sm'
                             className='h-6 w-6 p-0 hover:bg-blue-900/50'
-                            onClick={() => handleSyncAllInCama(row)}
+                            onClick={() => setSelectedSummary(row)}
                           >
-                            <Upload className='h-4 w-4 text-blue-400' />
+                            <Maximize2 className='h-4 w-4 text-blue-400' />
                           </Button>
-                        )}
-                      </TableCell>
-                      <TableCell className='text-center'>
-                        <Button
-                          variant='ghost'
-                          size='sm'
-                          className='h-6 w-6 p-0 hover:bg-red-900/50'
-                          onClick={() => setCamaToDelete(row)}
-                        >
-                          <Trash2 className='h-4 w-4 text-red-400' />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                        </TableCell>
+                        <TableCell className='text-center'>
+                          {syncStatus === 'syncing' ? (
+                            <Loader2 className='h-4 w-4 text-blue-400 mx-auto animate-spin' />
+                          ) : syncStatus === 'synced' ? (
+                            <CheckCircle className='h-4 w-4 text-green-400 mx-auto' />
+                          ) : syncStatus === 'error' ? (
+                            <Button
+                              variant='ghost'
+                              size='sm'
+                              className='h-6 w-6 p-0 hover:bg-red-900/50'
+                              onClick={() => handleSyncAllInCama(row)}
+                            >
+                              <XCircle className='h-4 w-4 text-red-400' />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant='ghost'
+                              size='sm'
+                              className='h-6 w-6 p-0 hover:bg-blue-900/50'
+                              onClick={() => handleSyncAllInCama(row)}
+                            >
+                              <Upload className='h-4 w-4 text-blue-400' />
+                            </Button>
+                          )}
+                        </TableCell>
+                        <TableCell className='text-center'>
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            className='h-6 w-6 p-0 hover:bg-red-900/50'
+                            onClick={() => setCamaToDelete(row)}
+                          >
+                            <Trash2 className='h-4 w-4 text-red-400' />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
                     )
                   })}
                 </TableBody>
