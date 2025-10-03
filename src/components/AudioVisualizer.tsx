@@ -8,8 +8,8 @@ type AudioVisualizerProps = {
 
 export function AudioVisualizer({ isListening, audioContext, stream }: AudioVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const animationRef = useRef<number>()
-  const analyserRef = useRef<AnalyserNode>()
+  const animationRef = useRef<number | undefined>(undefined)
+  const analyserRef = useRef<AnalyserNode | undefined>(undefined)
 
   useEffect(() => {
     if (!isListening || !audioContext || !stream || !canvasRef.current) {

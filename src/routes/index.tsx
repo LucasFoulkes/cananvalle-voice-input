@@ -1,12 +1,57 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import type { Observation } from '@/types'
+import type { Observation, GpsLocation } from '@/types'
 import { useVosk } from '@/hooks/useVosk'
 import TileButton from '@/components/TileButton'
-import { interpretVoiceText, HIERARCHY } from '@/lib/commandEngine'
+import { interpretVoiceText, HIERARCHY, type ContextKey } from '@/lib/commandEngine'
 import { Mic, Loader2 } from 'lucide-react'
 import { AudioVisualizer } from '@/components/AudioVisualizer'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+
+// Utility function to generate UUID
+function generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0
+        const v = c === 'x' ? r : (r & 0x3 | 0x8)
+        return v.toString(16)
+    })
+}
+
+// Function to capture GPS location
+async function captureGpsLocation(): Promise<GpsLocation | null> {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve(null)
+            return
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const gps: GpsLocation = {
+                    id: generateUUID(),
+                    usuario_id: null,
+                    latitud: position.coords.latitude,
+                    longitud: position.coords.longitude,
+                    precision: position.coords.accuracy,
+                    altitud: position.coords.altitude,
+                    creado_en: new Date().toISOString()
+                }
+                resolve(gps)
+            },
+            (error) => {
+                console.warn('GPS capture failed:', error)
+                resolve(null)
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            }
+        )
+    })
+}
 
 type Location = {
     finca: string
@@ -39,6 +84,9 @@ function RouteComponent() {
     const [command, setCommand] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
     const [loadingState, setLoadingState] = useState<LoadingState>('idle')
+    const lastProcessedRef = useRef<{ text: string; timestamp: number }>({ text: '', timestamp: 0 })
+    const [manualInputDialog, setManualInputDialog] = useState<{ type: 'location' | 'estado'; key: string } | null>(null)
+    const [manualInputValue, setManualInputValue] = useState('')
 
     useEffect(() => {
         try {
@@ -56,87 +104,159 @@ function RouteComponent() {
     const onVoiceText = useCallback((text: string, isFinal: boolean) => {
         if (!isFinal) return
 
+        const now = Date.now()
+
+        // Prevent duplicate processing within 200ms
+        if (lastProcessedRef.current.text === text && (now - lastProcessedRef.current.timestamp) < 200) {
+            console.log('DEBUG: Skipping duplicate within 200ms', text)
+            return
+        }
+
+        lastProcessedRef.current = { text, timestamp: now }
         console.log('DEBUG: onVoiceText called', { text, command, location })
-        const { buffer, event } = interpretVoiceText(command, text)
-        console.log('DEBUG: interpretVoiceText result', { buffer, event })
-        setCommand(buffer)
 
-        if (!event) return
+        const result = interpretVoiceText(command, text)
+        console.log('DEBUG: interpretVoiceText result', result)
+        setCommand(result.buffer)
 
-        // Handle navigation commands
-        if (event.type === 'navigate') {
-            navigate({ to: event.to })
-            setCommand('')
-            setErrorMessage('')
-            return
-        }
+        // Use events array if multiple commands, otherwise use single event
+        const eventsToProcess = result.events || (result.event ? [result.event] : [])
 
-        // Handle location context updates using hierarchy
-        if (event.type === 'context') {
-            console.log('DEBUG: context event', { key: event.key, value: event.value, currentLocation: location })
-            const index = HIERARCHY.indexOf(event.key)
+        if (eventsToProcess.length === 0) return
 
-            // Use functional update to get the latest location state
-            setLocation(prevLocation => {
-                const newLocation = { ...prevLocation }
+        // Process each event in order
+        eventsToProcess.forEach((event, index) => {
+            const isLastEvent = index === eventsToProcess.length - 1
 
-                // Set the current level
-                const value = event.key === 'cama'
-                    ? String(event.value).padStart(2, '0')
-                    : String(event.value)
-                newLocation[event.key] = value
-
-                // Clear all levels after this one in the hierarchy
-                for (let i = index + 1; i < HIERARCHY.length; i++) {
-                    newLocation[HIERARCHY[i]] = ''
-                }
-
-                console.log('DEBUG: setting newLocation', newLocation)
-                return newLocation
-            })
-            setCommand('')
-            setErrorMessage('')
-            return
-        }
-
-        // Handle undo command
-        if (event.type === 'undo') {
-            if (observaciones.length > 0) {
-                setObservaciones(prev => prev.slice(0, -1))
-                setErrorMessage('')
-            } else {
-                setErrorMessage('No hay observaciones para borrar')
-            }
-            setCommand('')
-            return
-        }
-
-        // Handle estado/observation commands with upfront validation
-        if (event.type === 'estado') {
-            setLocation(currentLocation => {
-                if (!HIERARCHY.every(key => currentLocation[key] !== '')) {
-                    setErrorMessage('Complete la ubicación primero (finca, bloque, cama)')
-                    setCommand('')
-                    return currentLocation
-                }
-
-                setObservaciones(prev => [...prev, {
-                    fecha: new Date().toISOString(),
-                    ...currentLocation,
-                    estado: event.estado,
-                    cantidad: Number(event.cantidad)
-                }])
+            // Handle navigation commands
+            if (event.type === 'navigate') {
+                navigate({ to: event.to })
                 setCommand('')
                 setErrorMessage('')
-                return currentLocation
-            })
-        }
-    }, [command, observaciones.length])
+                return
+            }
+
+            // Handle location context updates using hierarchy
+            if (event.type === 'context') {
+                console.log('DEBUG: context event', { key: event.key, value: event.value, currentLocation: location })
+                const hierarchyIndex = HIERARCHY.indexOf(event.key)
+
+                // Use functional update to get the latest location state
+                setLocation(prevLocation => {
+                    const newLocation = { ...prevLocation }
+
+                    // Set the current level
+                    const value = event.key === 'cama'
+                        ? String(event.value).padStart(2, '0')
+                        : String(event.value)
+                    newLocation[event.key] = value
+
+                    // Clear all levels after this one in the hierarchy
+                    for (let i = hierarchyIndex + 1; i < HIERARCHY.length; i++) {
+                        newLocation[HIERARCHY[i]] = ''
+                    }
+
+                    console.log('DEBUG: setting newLocation', newLocation)
+                    return newLocation
+                })
+                if (isLastEvent) {
+                    setCommand('')
+                    setErrorMessage('')
+                }
+                return
+            }
+
+            // Handle undo command
+            if (event.type === 'undo') {
+                if (observaciones.length > 0) {
+                    setObservaciones(prev => prev.slice(0, -1))
+                    setErrorMessage('')
+                } else {
+                    setErrorMessage('No hay observaciones para borrar')
+                }
+                if (isLastEvent) setCommand('')
+                return
+            }
+
+            // Handle undo-estado command (delete last observation of specific estado in current location)
+            if (event.type === 'undo-estado') {
+                setLocation(currentLocation => {
+                    if (!HIERARCHY.every(key => currentLocation[key] !== '')) {
+                        setErrorMessage('Complete la ubicación primero')
+                        setCommand('')
+                        return currentLocation
+                    }
+
+                    // Find the last observation of this estado in current location
+                    setObservaciones(prev => {
+                        const matchingIndices: number[] = []
+                        prev.forEach((obs, index) => {
+                            if (obs.finca === currentLocation.finca &&
+                                obs.bloque === currentLocation.bloque &&
+                                obs.cama === currentLocation.cama &&
+                                obs.estado === event.estado) {
+                                matchingIndices.push(index)
+                            }
+                        })
+
+                        if (matchingIndices.length === 0) {
+                            setErrorMessage(`No hay ${event.estado} para borrar`)
+                            return prev
+                        }
+
+                        // Remove the last matching observation
+                        const lastIndex = matchingIndices[matchingIndices.length - 1]
+                        const newObservaciones = [...prev]
+                        newObservaciones.splice(lastIndex, 1)
+                        setErrorMessage('')
+                        return newObservaciones
+                    })
+
+                    if (isLastEvent) setCommand('')
+                    return currentLocation
+                })
+                return
+            }
+
+            // Handle estado/observation commands with upfront validation
+            if (event.type === 'estado') {
+                setLocation(currentLocation => {
+                    if (!HIERARCHY.every(key => currentLocation[key] !== '')) {
+                        setErrorMessage('Complete la ubicación primero (finca, bloque, cama)')
+                        setCommand('')
+                        return currentLocation
+                    }
+
+                    // Capture GPS and add observation asynchronously
+                    const locationSnapshot = { ...currentLocation }
+                    const timestamp = new Date().toISOString()
+
+                    captureGpsLocation().then(gps => {
+                        setObservaciones(prev => [...prev, {
+                            fecha: timestamp,
+                            ...locationSnapshot,
+                            estado: event.estado,
+                            cantidad: Number(event.cantidad),
+                            ...(gps && { gps })
+                        }])
+                    })
+
+                    if (isLastEvent) {
+                        setCommand('')
+                        setErrorMessage('')
+                    }
+                    return currentLocation
+                })
+            }
+        })
+    }, [command])
 
     const { isListening, start: voskStart, stop, audioContext, mediaStream, partialTranscript } = useVosk({ onResult: onVoiceText })
 
     const start = async () => {
         setLoadingState('loading')
+        // Request GPS permission on user gesture (button click)
+        await captureGpsLocation()
         await voskStart()
         setLoadingState('ready')
     }
@@ -156,19 +276,129 @@ function RouteComponent() {
         return acc
     }, { arroz: 0, arveja: 0, garbanzo: 0, color: 0, abierto: 0 })
 
+    const handleManualInput = async () => {
+        if (!manualInputDialog || !manualInputValue) return
+
+        if (manualInputDialog.type === 'location') {
+            // Handle location input (finca, bloque, cama)
+            const value = manualInputDialog.key === 'cama'
+                ? manualInputValue.padStart(2, '0')
+                : manualInputValue
+
+            const hierarchyIndex = HIERARCHY.indexOf(manualInputDialog.key as ContextKey)
+
+            setLocation(prevLocation => {
+                const newLocation = { ...prevLocation }
+                newLocation[manualInputDialog.key as ContextKey] = value
+
+                // Clear all levels after this one in the hierarchy
+                for (let i = hierarchyIndex + 1; i < HIERARCHY.length; i++) {
+                    newLocation[HIERARCHY[i]] = ''
+                }
+
+                return newLocation
+            })
+
+            setManualInputDialog(null)
+            setManualInputValue('')
+            setErrorMessage('')
+        } else {
+            // Handle estado input (arroz, arveja, etc.)
+            const cantidad = parseInt(manualInputValue, 10)
+            if (isNaN(cantidad) || cantidad <= 0) {
+                setErrorMessage('Cantidad inválida')
+                return
+            }
+
+            if (!HIERARCHY.every(key => location[key] !== '')) {
+                setErrorMessage('Complete la ubicación primero (finca, bloque, cama)')
+                setManualInputDialog(null)
+                setManualInputValue('')
+                return
+            }
+
+            const gps = await captureGpsLocation()
+
+            setObservaciones(prev => [...prev, {
+                fecha: new Date().toISOString(),
+                ...location,
+                estado: manualInputDialog.key,
+                cantidad,
+                ...(gps && { gps })
+            }])
+
+            setManualInputDialog(null)
+            setManualInputValue('')
+            setErrorMessage('')
+        }
+    }
+
+    // Determine which tiles should be active (green) or ready (emerald)
+    const isVoiceActive = loadingState === 'ready' && isListening
+    const isLocationComplete = HIERARCHY.every(key => location[key] !== '')
+
     return (
         <div className='flex flex-col gap-1 p-1 h-full'>
             <div className='grid grid-cols-3 gap-1'>
-                <TileButton label='FINCA' value={location.finca || '-'} square />
-                <TileButton label='BLOQUE' value={location.bloque || '-'} square labelClassName='relative top-1' />
-                <TileButton label='CAMA' value={location.cama || '-'} square />
+                <TileButton
+                    label='FINCA'
+                    value={location.finca || '-'}
+                    square
+                    isActive={location.finca !== '' || (isVoiceActive && !location.finca)}
+                    onClick={() => setManualInputDialog({ type: 'location', key: 'finca' })}
+                />
+                <TileButton
+                    label='BLOQUE'
+                    value={location.bloque || '-'}
+                    square
+                    labelClassName='relative top-1'
+                    isActive={location.bloque !== '' || (isVoiceActive && location.finca !== '' && !location.bloque)}
+                    onClick={() => setManualInputDialog({ type: 'location', key: 'bloque' })}
+                />
+                <TileButton
+                    label='CAMA'
+                    value={location.cama || '-'}
+                    square
+                    isActive={location.cama !== '' || (isVoiceActive && location.finca !== '' && location.bloque !== '' && !location.cama)}
+                    onClick={() => setManualInputDialog({ type: 'location', key: 'cama' })}
+                />
             </div>
             <div className='grid grid-cols-3 gap-1'>
-                <TileButton label='ARROZ' value={sums.arroz} square />
-                <TileButton label='ARVEJA' value={sums.arveja} square />
-                <TileButton label='GARBANZO' value={sums.garbanzo} square />
-                <TileButton label='COLOR' value={sums.color} square />
-                <TileButton label='ABIERTO' value={sums.abierto} square />
+                <TileButton
+                    label='ARROZ'
+                    value={sums.arroz}
+                    square
+                    onClick={() => setManualInputDialog({ type: 'estado', key: 'arroz' })}
+                    isReady={isVoiceActive && isLocationComplete}
+                />
+                <TileButton
+                    label='ARVEJA'
+                    value={sums.arveja}
+                    square
+                    onClick={() => setManualInputDialog({ type: 'estado', key: 'arveja' })}
+                    isReady={isVoiceActive && isLocationComplete}
+                />
+                <TileButton
+                    label='GARBANZO'
+                    value={sums.garbanzo}
+                    square
+                    onClick={() => setManualInputDialog({ type: 'estado', key: 'garbanzo' })}
+                    isReady={isVoiceActive && isLocationComplete}
+                />
+                <TileButton
+                    label='COLOR'
+                    value={sums.color}
+                    square
+                    onClick={() => setManualInputDialog({ type: 'estado', key: 'color' })}
+                    isReady={isVoiceActive && isLocationComplete}
+                />
+                <TileButton
+                    label='ABIERTO'
+                    value={sums.abierto}
+                    square
+                    onClick={() => setManualInputDialog({ type: 'estado', key: 'abierto' })}
+                    isReady={isVoiceActive && isLocationComplete}
+                />
             </div>
             <Button
                 className={`w-full text-white border-none px-3 flex-1 flex flex-col items-center justify-center gap-4 relative ${isListening ? 'bg-blue-500' : ''} ${errorMessage ? 'bg-red-500' : ''} ${loadingState === 'loading' ? 'bg-yellow-500' : ''}`}
@@ -198,6 +428,37 @@ function RouteComponent() {
                     </>
                 )}
             </Button>
+
+            <Dialog open={!!manualInputDialog} onOpenChange={(open) => !open && setManualInputDialog(null)}>
+                <DialogContent className='bg-zinc-900 text-white border-zinc-700'>
+                    <DialogHeader>
+                        <DialogTitle className='text-center capitalize'>
+                            {manualInputDialog?.key}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className='flex flex-col gap-4 pt-4'>
+                        <Input
+                            type={manualInputDialog?.type === 'location' ? 'text' : 'number'}
+                            placeholder='Valor'
+                            value={manualInputValue}
+                            onChange={(e) => setManualInputValue(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleManualInput()
+                                }
+                            }}
+                            autoFocus
+                            className='bg-zinc-800 border-zinc-700 text-white'
+                        />
+                        <Button
+                            onClick={handleManualInput}
+                            className='bg-blue-600 hover:bg-blue-700'
+                        >
+                            Agregar
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div >
     )
 }

@@ -1,3 +1,13 @@
+export type GpsLocation = {
+    id: string
+    usuario_id: string | null
+    latitud: number
+    longitud: number
+    precision: number
+    altitud: number | null
+    creado_en: string
+}
+
 export type Observation = {
     fecha: string
     finca: string
@@ -5,4 +15,7 @@ export type Observation = {
     cama: string
     estado: string
     cantidad: number
+    gps?: GpsLocation
+    synced?: boolean
+    syncError?: string
 }
