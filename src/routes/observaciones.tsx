@@ -43,6 +43,7 @@ function RouteComponent() {
   )
   const [selectedSummary, setSelectedSummary] = useState<SummaryRow | null>(null)
   const [entryToDelete, setEntryToDelete] = useState<Observation | null>(null)
+  const [camaToDelete, setCamaToDelete] = useState<SummaryRow | null>(null)
   const [selectedGps, setSelectedGps] = useState<GpsLocation | null>(null)
 
   // Group observations by finca/bloque/cama/day
@@ -83,30 +84,53 @@ function RouteComponent() {
     return acc
   }, {} as Record<string, SummaryRow[]>)
 
+  // Keep selectedSummary in sync with latest data
+  const currentSelectedSummary = selectedSummary
+    ? summaries.find(s =>
+        s.finca === selectedSummary.finca &&
+        s.bloque === selectedSummary.bloque &&
+        s.cama === selectedSummary.cama &&
+        s.fecha === selectedSummary.fecha
+      ) || null
+    : null
+
+  const isSameObservation = (a: Observation, b: Observation) => {
+    return a.fecha === b.fecha &&
+      a.finca === b.finca &&
+      a.bloque === b.bloque &&
+      a.cama === b.cama &&
+      a.estado === b.estado &&
+      a.cantidad === b.cantidad
+  }
+
   const handleSyncObservation = async (observation: Observation) => {
     if (observation.synced || observation.syncing) return
 
     // Mark as syncing
     setObservaciones(prev => prev.map(obs =>
-      obs === observation ? { ...obs, syncing: true, syncError: undefined } : obs
+      isSameObservation(obs, observation) ? { ...obs, syncing: true, syncError: undefined } : obs
     ))
 
     try {
       const observacionId = await syncObservationToSupabase(observation)
 
       // Mark as synced
-      const updated = observaciones.map(obs =>
-        obs === observation ? { ...obs, synced: true, syncing: false, syncError: undefined, observacionId } : obs
-      )
-      setObservaciones(updated)
-      localStorage.setItem("observaciones", JSON.stringify(updated))
+      setObservaciones(prev => {
+        const updated = prev.map(obs =>
+          isSameObservation(obs, observation) ? { ...obs, synced: true, syncing: false, syncError: undefined, observacionId } : obs
+        )
+        localStorage.setItem("observaciones", JSON.stringify(updated))
+        return updated
+      })
     } catch (error) {
       console.error('Sync error:', error)
-      const updated = observaciones.map(obs =>
-        obs === observation ? { ...obs, syncing: false, syncError: error instanceof Error ? error.message : 'Error desconocido' } : obs
-      )
-      setObservaciones(updated)
-      localStorage.setItem("observaciones", JSON.stringify(updated))
+      setObservaciones(prev => {
+        const updated = prev.map(obs =>
+          isSameObservation(obs, observation) ? { ...obs, syncing: false, syncError: error instanceof Error ? error.message : 'Error desconocido' } : obs
+        )
+        localStorage.setItem("observaciones", JSON.stringify(updated))
+        return updated
+      })
     }
   }
 
@@ -114,7 +138,9 @@ function RouteComponent() {
     const allSynced = entries.every(e => e.synced)
     const hasFailed = entries.some(e => e.syncError)
     const someSynced = entries.some(e => e.synced)
+    const anySyncing = entries.some(e => e.syncing)
 
+    if (anySyncing) return 'syncing'
     if (allSynced) return 'synced'
     if (hasFailed) return 'error'
     if (someSynced) return 'partial'
@@ -143,16 +169,19 @@ function RouteComponent() {
     }
   }
 
-  const handleDeleteAllInCama = (row: SummaryRow) => {
+  const handleDeleteAllInCama = () => {
+    if (!camaToDelete) return
+
     const updatedObservaciones = observaciones.filter(
-      obs => !(obs.finca === row.finca && obs.bloque === row.bloque && obs.cama === row.cama)
+      obs => !(obs.finca === camaToDelete.finca && obs.bloque === camaToDelete.bloque && obs.cama === camaToDelete.cama && obs.fecha.startsWith(camaToDelete.fecha))
     )
     setObservaciones(updatedObservaciones)
     localStorage.setItem("observaciones", JSON.stringify(updatedObservaciones))
+    setCamaToDelete(null)
   }
 
   const handleDeleteEntry = () => {
-    if (!entryToDelete || !selectedSummary) return
+    if (!entryToDelete || !currentSelectedSummary) return
 
     const updatedObservaciones = observaciones.filter(
       obs => obs.fecha !== entryToDelete.fecha ||
@@ -166,23 +195,17 @@ function RouteComponent() {
     setObservaciones(updatedObservaciones)
     localStorage.setItem("observaciones", JSON.stringify(updatedObservaciones))
 
-    // Update the selected summary to reflect the deletion
-    const updatedEntries = selectedSummary.entries.filter(
-      entry => entry !== entryToDelete
+    // Check if any entries remain for this cama
+    const remainingEntries = updatedObservaciones.filter(
+      obs => obs.finca === currentSelectedSummary.finca &&
+        obs.bloque === currentSelectedSummary.bloque &&
+        obs.cama === currentSelectedSummary.cama &&
+        new Date(obs.fecha).toISOString().split('T')[0] === new Date(currentSelectedSummary.fecha).toISOString().split('T')[0]
     )
 
-    if (updatedEntries.length === 0) {
+    if (remainingEntries.length === 0) {
       // If no entries left, close the dialog
       setSelectedSummary(null)
-    } else {
-      // Update the summary with new entries and recalculated totals
-      const newSummary = { ...selectedSummary, entries: updatedEntries }
-      newSummary.arroz = updatedEntries.filter(e => e.estado === 'arroz').reduce((sum, e) => sum + e.cantidad, 0)
-      newSummary.arveja = updatedEntries.filter(e => e.estado === 'arveja').reduce((sum, e) => sum + e.cantidad, 0)
-      newSummary.garbanzo = updatedEntries.filter(e => e.estado === 'garbanzo').reduce((sum, e) => sum + e.cantidad, 0)
-      newSummary.color = updatedEntries.filter(e => e.estado === 'color').reduce((sum, e) => sum + e.cantidad, 0)
-      newSummary.abierto = updatedEntries.filter(e => e.estado === 'abierto').reduce((sum, e) => sum + e.cantidad, 0)
-      setSelectedSummary(newSummary)
     }
 
     setEntryToDelete(null)
@@ -238,22 +261,36 @@ function RouteComponent() {
                         </Button>
                       </TableCell>
                       <TableCell className='text-center'>
-                        <Button
-                          variant='ghost'
-                          size='sm'
-                          className='h-6 w-6 p-0 hover:bg-blue-900/50'
-                          onClick={() => handleSyncAllInCama(row)}
-                          disabled={row.entries.every(e => e.synced)}
-                        >
-                          <Upload className='h-4 w-4 text-blue-400' />
-                        </Button>
+                        {syncStatus === 'syncing' ? (
+                          <Loader2 className='h-4 w-4 text-blue-400 mx-auto animate-spin' />
+                        ) : syncStatus === 'synced' ? (
+                          <CheckCircle className='h-4 w-4 text-green-400 mx-auto' />
+                        ) : syncStatus === 'error' ? (
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            className='h-6 w-6 p-0 hover:bg-red-900/50'
+                            onClick={() => handleSyncAllInCama(row)}
+                          >
+                            <XCircle className='h-4 w-4 text-red-400' />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            className='h-6 w-6 p-0 hover:bg-blue-900/50'
+                            onClick={() => handleSyncAllInCama(row)}
+                          >
+                            <Upload className='h-4 w-4 text-blue-400' />
+                          </Button>
+                        )}
                       </TableCell>
                       <TableCell className='text-center'>
                         <Button
                           variant='ghost'
                           size='sm'
                           className='h-6 w-6 p-0 hover:bg-red-900/50'
-                          onClick={() => handleDeleteAllInCama(row)}
+                          onClick={() => setCamaToDelete(row)}
                         >
                           <Trash2 className='h-4 w-4 text-red-400' />
                         </Button>
@@ -272,12 +309,12 @@ function RouteComponent() {
         <DialogContent className='bg-zinc-900 text-white border-zinc-700'>
           <DialogHeader>
             <DialogTitle className='flex flex-col gap-1 '>
-              <div className='flex gap-2 text-xl '><span className='font-semibold'>Cama {selectedSummary?.cama}</span>
+              <div className='flex gap-2 text-xl '><span className='font-semibold'>Cama {currentSelectedSummary?.cama}</span>
                 <span className='font-thin text-xs flex flex-row items-center'>
                   <Dot />
-                  Bloque {selectedSummary?.bloque}
+                  Bloque {currentSelectedSummary?.bloque}
                   <Dot />
-                  Finca {selectedSummary?.finca}
+                  Finca {currentSelectedSummary?.finca}
                 </span>
               </div>
             </DialogTitle>
@@ -295,7 +332,7 @@ function RouteComponent() {
                 </TableRow>
               </TableHeader>
               <TableBody className='text-xs'>
-                {selectedSummary?.entries.map((entry, i) => (
+                {currentSelectedSummary?.entries.map((entry, i) => (
                   <TableRow key={i} className={getEntryRowClassName(entry)}>
                     <TableCell>{new Date(entry.fecha).toLocaleTimeString()}</TableCell>
                     <TableCell className='capitalize'>{entry.estado}</TableCell>
@@ -379,6 +416,33 @@ function RouteComponent() {
             <Button
               variant='destructive'
               onClick={handleDeleteEntry}
+              className='bg-red-600 hover:bg-red-700'
+            >
+              Eliminar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!camaToDelete} onOpenChange={(open) => !open && setCamaToDelete(null)}>
+        <DialogContent className='bg-zinc-900 text-white border-zinc-700'>
+          <DialogHeader>
+            <DialogTitle className='text-center'>
+              ¿Eliminar todas las entradas de esta cama?
+            </DialogTitle>
+          </DialogHeader>
+          <div className='flex flex-col gap-2 pt-2'>
+            <p className='text-center text-sm text-zinc-400'>
+              Finca {camaToDelete?.finca} • Bloque {camaToDelete?.bloque} • Cama {camaToDelete?.cama}
+            </p>
+            <p className='text-center text-sm text-zinc-400'>
+              {camaToDelete?.entries.length} {camaToDelete?.entries.length === 1 ? 'entrada' : 'entradas'}
+            </p>
+          </div>
+          <div className='flex justify-center pt-4'>
+            <Button
+              variant='destructive'
+              onClick={handleDeleteAllInCama}
               className='bg-red-600 hover:bg-red-700'
             >
               Eliminar
