@@ -23,7 +23,8 @@ export default defineConfig({
       name: 'rose-tracker',
       short_name: 'rose-tracker',
       description: 'rose-tracker',
-      theme_color: '#ffffff',
+      theme_color: '#000000',
+      background_color: '#000000',
     },
 
     workbox: {

@@ -17,7 +17,12 @@ from pathlib import Path
 import argparse
 from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
-from scripts.spanish_numbers import number_to_spanish
+try:
+    # When run as a module: python -m scripts.generate_numbers_audio
+    from scripts.spanish_numbers import number_to_spanish  # type: ignore
+except ModuleNotFoundError:
+    # When run directly: python scripts/generate_numbers_audio.py
+    from spanish_numbers import number_to_spanish  # type: ignore
 
 VOICE_ID = "xBQhWSfOLmqtKUe8AGj8"
 MODEL_ID = "eleven_multilingual_v2"
