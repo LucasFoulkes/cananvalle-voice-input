@@ -56,6 +56,28 @@ const TONES = {
     abierto: 1175  // D6
 }
 
+// Vibration patterns for different command types
+const VIBRATION_PATTERNS = {
+    finca: [50],           // Single short
+    bloque: [50, 30, 50],  // Double tap
+    cama: [50, 30, 50, 30, 50], // Triple tap
+    arroz: [100],          // Single medium
+    arveja: [100],
+    garbanzo: [100],
+    color: [100],
+    abierto: [100]
+}
+
+function vibrate(pattern: number[]) {
+    if (navigator.vibrate) {
+        try {
+            navigator.vibrate(pattern)
+        } catch (e) {
+            console.warn('Vibration failed:', e)
+        }
+    }
+}
+
 // Function to capture GPS location
 async function captureGpsLocation(): Promise<GpsLocation | null> {
     return new Promise((resolve) => {
@@ -178,10 +200,13 @@ function RouteComponent() {
                 console.log('DEBUG: context event', { key: event.key, value: event.value, currentLocation: location })
                 const hierarchyIndex = HIERARCHY.indexOf(event.key)
 
-                // Play tone for this location level (with slight delay for multiple commands)
+                // Play tone and vibrate for this location level (with slight delay for multiple commands)
                 setTimeout(() => {
                     const tone = TONES[event.key as keyof typeof TONES]
                     if (tone) playTone(tone)
+
+                    const pattern = VIBRATION_PATTERNS[event.key as keyof typeof VIBRATION_PATTERNS]
+                    if (pattern) vibrate(pattern)
                 }, index * 150)
 
                 // Use functional update to get the latest location state
@@ -270,10 +295,13 @@ function RouteComponent() {
                         return currentLocation
                     }
 
-                    // Play tone for this estado (with slight delay for multiple commands)
+                    // Play tone and vibrate for this estado (with slight delay for multiple commands)
                     setTimeout(() => {
                         const tone = TONES[event.estado as keyof typeof TONES]
                         if (tone) playTone(tone)
+
+                        const pattern = VIBRATION_PATTERNS[event.estado as keyof typeof VIBRATION_PATTERNS]
+                        if (pattern) vibrate(pattern)
                     }, index * 150)
 
                     // Capture GPS and add observation asynchronously
