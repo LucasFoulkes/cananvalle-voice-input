@@ -8,8 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { ShieldCheck, UserPlus, Loader2, ChevronDown, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ShieldCheck, UserPlus, Loader2, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createUsuario, getAllUsuarios, type CreateUsuarioInput } from '@/services/usuarioManagementService'
 import { getUserTimelines, type UserTimeline } from '@/services/timelineService'
 import { UserTimelineView } from '@/components/UserTimeline'
@@ -200,11 +199,10 @@ function ControlCalidadComponent() {
                           <TableCell>{user.apellidos || '-'}</TableCell>
                           <TableCell>{user.cedula || '-'}</TableCell>
                           <TableCell>
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              user.rol === 'sudo' ? 'bg-purple-600' :
+                            <span className={`px-2 py-1 rounded text-xs ${user.rol === 'sudo' ? 'bg-purple-600' :
                               user.rol === 'control_de_calidad' ? 'bg-blue-600' :
-                              'bg-zinc-600'
-                            }`}>
+                                'bg-zinc-600'
+                              }`}>
                               {user.rol}
                             </span>
                           </TableCell>
@@ -221,15 +219,7 @@ function ControlCalidadComponent() {
       </Collapsible>
 
       <Card className='bg-zinc-900 border-none text-white flex-1 min-h-0 flex flex-col'>
-        <CardHeader className='flex-shrink-0'>
-          <CardTitle className='flex items-center justify-between'>
-            <div className='flex items-center gap-2'>
-              <Calendar className='text-blue-400' />
-              Línea de Tiempo - Conteos
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className='flex-1 min-h-0 flex flex-col gap-4'>
+        <CardContent className='flex-1 min-h-0 flex flex-col gap-2 px-2'>
           <div className='flex items-center justify-center gap-2 flex-shrink-0'>
             <Button
               onClick={goToPreviousDay}
@@ -258,7 +248,7 @@ function ControlCalidadComponent() {
                 <Loader2 className='animate-spin text-zinc-400' size={32} />
               </div>
             ) : (
-              <UserTimelineView timelines={timelines} selectedDate={selectedDate} />
+              <UserTimelineView timelines={timelines} />
             )}
           </div>
         </CardContent>
