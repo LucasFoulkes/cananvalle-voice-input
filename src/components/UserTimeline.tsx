@@ -63,17 +63,17 @@ export function UserTimelineView({ timelines }: Props) {
   return (
     <div className='flex flex-col h-full gap-1'>
       {/* Bars and time axis - fixed at top */}
-      <div className='flex-shrink-0'>
-        <div className='w-full'>
-          {/* User timeline bars - fixed */}
-          {timelines.map(timeline => (
-            <div key={timeline.id_usuario}>
-              <div className='text-sm font-medium text-white mb-2'>
-                {timeline.nombres} {timeline.apellidos || ''}
-                <span className='ml-2 text-xs text-zinc-400'>
-                  ({timeline.segments.length} cama{timeline.segments.length !== 1 ? 's' : ''})
-                </span>
-              </div>
+      <div className='flex-shrink-0 space-y-4'>
+        {/* User timeline bars */}
+        {timelines.map(timeline => (
+          <div key={timeline.id_usuario}>
+            <div className='text-sm font-medium text-white mb-2'>
+              {timeline.nombres} {timeline.apellidos || ''}
+              <span className='ml-2 text-xs text-zinc-400'>
+                ({timeline.segments.length} cama{timeline.segments.length !== 1 ? 's' : ''})
+              </span>
+            </div>
+            <div className='px-4'>
               <div className='relative h-6 bg-zinc-800 rounded'>
                 {timeline.segments.map((segment, idx) => {
                   const left = getPosition(segment.first_observation)
@@ -93,10 +93,12 @@ export function UserTimelineView({ timelines }: Props) {
                 })}
               </div>
             </div>
-          ))}
+          </div>
+        ))}
 
-          {/* Time axis - below bars */}
-          <div className='relative h-6 pt-1 '>
+        {/* Time axis - below bars with same padding */}
+        <div className='px-4'>
+          <div className='relative h-6 pt-1 overflow-hidden'>
             {hours.map((hour, idx) => {
               const position = ((hour.getTime() - timeStart) / duration) * 100
               return (
