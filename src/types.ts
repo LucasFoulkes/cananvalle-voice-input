@@ -18,4 +18,6 @@ export type Observation = {
     gps?: GpsLocation
     synced?: boolean
     syncError?: string
+    syncing?: boolean
+    observacionId?: number
 }

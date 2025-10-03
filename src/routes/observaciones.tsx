@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
-import { Dot, Trash2, Maximize2, MapPin, Upload, CheckCircle, XCircle } from 'lucide-react'
+import { Dot, Trash2, Maximize2, MapPin, Upload, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/observaciones')({
@@ -84,26 +84,71 @@ function RouteComponent() {
   }, {} as Record<string, SummaryRow[]>)
 
   const handleSyncObservation = async (observation: Observation) => {
-    if (observation.synced) return
+    if (observation.synced || observation.syncing) return
+
+    // Mark as syncing
+    setObservaciones(prev => prev.map(obs =>
+      obs === observation ? { ...obs, syncing: true, syncError: undefined } : obs
+    ))
 
     try {
-      await syncObservationToSupabase(observation)
+      const observacionId = await syncObservationToSupabase(observation)
 
       // Mark as synced
-      setObservaciones(prev => prev.map(obs =>
-        obs === observation ? { ...obs, synced: true, syncError: undefined } : obs
-      ))
-      localStorage.setItem("observaciones", JSON.stringify(
-        observaciones.map(obs =>
-          obs === observation ? { ...obs, synced: true, syncError: undefined } : obs
-        )
-      ))
+      const updated = observaciones.map(obs =>
+        obs === observation ? { ...obs, synced: true, syncing: false, syncError: undefined, observacionId } : obs
+      )
+      setObservaciones(updated)
+      localStorage.setItem("observaciones", JSON.stringify(updated))
     } catch (error) {
       console.error('Sync error:', error)
-      setObservaciones(prev => prev.map(obs =>
-        obs === observation ? { ...obs, syncError: error instanceof Error ? error.message : 'Error desconocido' } : obs
-      ))
+      const updated = observaciones.map(obs =>
+        obs === observation ? { ...obs, syncing: false, syncError: error instanceof Error ? error.message : 'Error desconocido' } : obs
+      )
+      setObservaciones(updated)
+      localStorage.setItem("observaciones", JSON.stringify(updated))
     }
+  }
+
+  const getSyncStatus = (entries: Observation[]) => {
+    const allSynced = entries.every(e => e.synced)
+    const hasFailed = entries.some(e => e.syncError)
+    const someSynced = entries.some(e => e.synced)
+
+    if (allSynced) return 'synced'
+    if (hasFailed) return 'error'
+    if (someSynced) return 'partial'
+    return 'none'
+  }
+
+  const getRowClassName = (status: string) => {
+    switch (status) {
+      case 'synced': return 'bg-green-900/20 hover:bg-green-900/30'
+      case 'error': return 'bg-red-900/20 hover:bg-red-900/30'
+      case 'partial': return 'bg-amber-900/20 hover:bg-amber-900/30'
+      default: return 'hover:bg-zinc-700'
+    }
+  }
+
+  const getEntryRowClassName = (entry: Observation) => {
+    if (entry.synced) return 'bg-green-900/20 hover:bg-green-900/30'
+    if (entry.syncError) return 'bg-red-900/20 hover:bg-red-900/30'
+    return 'hover:bg-zinc-700'
+  }
+
+  const handleSyncAllInCama = async (row: SummaryRow) => {
+    const unsyncedEntries = row.entries.filter(e => !e.synced && !e.syncing)
+    for (const entry of unsyncedEntries) {
+      await handleSyncObservation(entry)
+    }
+  }
+
+  const handleDeleteAllInCama = (row: SummaryRow) => {
+    const updatedObservaciones = observaciones.filter(
+      obs => !(obs.finca === row.finca && obs.bloque === row.bloque && obs.cama === row.cama)
+    )
+    setObservaciones(updatedObservaciones)
+    localStorage.setItem("observaciones", JSON.stringify(updatedObservaciones))
   }
 
   const handleDeleteEntry = () => {
@@ -161,14 +206,18 @@ function RouteComponent() {
                     <TableHead className='text-white text-right'>Gar</TableHead>
                     <TableHead className='text-white text-right'>Col</TableHead>
                     <TableHead className='text-white text-right'>Abi</TableHead>
-                    <TableHead className='text-white text-center'></TableHead>
+                    <TableHead className='text-white text-center'>Ver</TableHead>
+                    <TableHead className='text-white text-center'>Sync</TableHead>
+                    <TableHead className='text-white text-center'>Del</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rows.map((row, i) => (
+                  {rows.map((row, i) => {
+                    const syncStatus = getSyncStatus(row.entries)
+                    return (
                     <TableRow
                       key={i}
-                      className='hover:bg-zinc-700'
+                      className={getRowClassName(syncStatus)}
                     >
                       <TableCell>{row.finca}</TableCell>
                       <TableCell>{row.bloque}</TableCell>
@@ -188,8 +237,30 @@ function RouteComponent() {
                           <Maximize2 className='h-4 w-4 text-blue-400' />
                         </Button>
                       </TableCell>
+                      <TableCell className='text-center'>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          className='h-6 w-6 p-0 hover:bg-blue-900/50'
+                          onClick={() => handleSyncAllInCama(row)}
+                          disabled={row.entries.every(e => e.synced)}
+                        >
+                          <Upload className='h-4 w-4 text-blue-400' />
+                        </Button>
+                      </TableCell>
+                      <TableCell className='text-center'>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          className='h-6 w-6 p-0 hover:bg-red-900/50'
+                          onClick={() => handleDeleteAllInCama(row)}
+                        >
+                          <Trash2 className='h-4 w-4 text-red-400' />
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  ))}
+                    )
+                  })}
                 </TableBody>
               </Table>
             </Card>
@@ -225,7 +296,7 @@ function RouteComponent() {
               </TableHeader>
               <TableBody className='text-xs'>
                 {selectedSummary?.entries.map((entry, i) => (
-                  <TableRow key={i}>
+                  <TableRow key={i} className={getEntryRowClassName(entry)}>
                     <TableCell>{new Date(entry.fecha).toLocaleTimeString()}</TableCell>
                     <TableCell className='capitalize'>{entry.estado}</TableCell>
                     <TableCell className='text-right'>{entry.cantidad}</TableCell>
@@ -247,12 +318,23 @@ function RouteComponent() {
                       )}
                     </TableCell>
                     <TableCell className='text-center'>
-                      {entry.synced ? (
+                      {entry.syncing ? (
+                        <Loader2 className='h-4 w-4 text-blue-400 mx-auto animate-spin' />
+                      ) : entry.synced ? (
                         <CheckCircle className='h-4 w-4 text-green-400 mx-auto' />
                       ) : entry.syncError ? (
-                        <div title={entry.syncError}>
-                          <XCircle className='h-4 w-4 text-red-400 mx-auto' />
-                        </div>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          className='h-6 w-6 p-0 hover:bg-red-900/50'
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleSyncObservation(entry)
+                          }}
+                          title={entry.syncError}
+                        >
+                          <XCircle className='h-4 w-4 text-red-400' />
+                        </Button>
                       ) : (
                         <Button
                           variant='ghost'

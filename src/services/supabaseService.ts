@@ -83,7 +83,7 @@ export async function syncObservationToSupabase(observation: Observation) {
   const cama = camas[0]
 
   // Insert observation
-  const { error: obsError } = await supabase
+  const { data: obsData, error: obsError } = await supabase
     .from('observacion')
     .insert({
       id_cama: cama.id_cama,
@@ -92,8 +92,11 @@ export async function syncObservationToSupabase(observation: Observation) {
       id_punto_gps: gpsId,
       creado_en: observation.fecha
     })
+    .select('id_observacion')
+    .single()
 
   if (obsError) throw obsError
+  if (!obsData) throw new Error('No se recibió ID de observación')
 
   // Add sync entry
   const modifiedTables = ['observacion']
@@ -106,4 +109,6 @@ export async function syncObservationToSupabase(observation: Observation) {
     })
 
   if (syncError) console.warn('Sync table entry failed:', syncError)
+
+  return obsData.id_observacion
 }
