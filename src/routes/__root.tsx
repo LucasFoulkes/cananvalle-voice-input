@@ -19,7 +19,7 @@ function RootComponent() {
         <main className='min-h-0 overflow-y-auto'>
           <Outlet />
         </main>
-        <nav className='flex w-full pb-5 px-4 bg-indigo-600 rounded-t-lg justify-center items-center gap-1 p-1'>
+        <nav className='flex w-full pb-5 px-3 bg-indigo-600 rounded-t-lg justify-center items-center gap-1 p-1'>
           {navItems.map(({ to, label, Icon }) => (
             <Link
               key={to}
