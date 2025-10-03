@@ -2,20 +2,17 @@ import { supabase } from '../lib/supabase'
 import type { Usuario } from '../types'
 
 const USUARIOS_KEY = 'usuarios'
-const LAST_SYNC_KEY = 'usuarios_last_sync'
-const SYNC_INTERVAL = 24 * 60 * 60 * 1000 // 24 hours
 
 export async function syncUsuarios(): Promise<Usuario[]> {
   try {
     const { data, error } = await supabase
       .from('usuario')
-      .select('id_usuario, nombres, clave_pin')
+      .select('id_usuario, nombres, apellidos, cedula, rol, clave_pin, creado_en')
 
     if (error) throw error
 
     if (data) {
       localStorage.setItem(USUARIOS_KEY, JSON.stringify(data))
-      localStorage.setItem(LAST_SYNC_KEY, Date.now().toString())
       return data
     }
 
@@ -36,14 +33,8 @@ export function getLocalUsuarios(): Usuario[] {
 }
 
 export async function getUsuarios(): Promise<Usuario[]> {
-  const lastSync = localStorage.getItem(LAST_SYNC_KEY)
-  const shouldSync = !lastSync || (Date.now() - parseInt(lastSync, 10)) > SYNC_INTERVAL
-
-  if (shouldSync) {
-    return await syncUsuarios()
-  }
-
-  return getLocalUsuarios()
+  // Always try to sync when online, fallback to local if offline
+  return await syncUsuarios()
 }
 
 export function validatePin(pin: string): Usuario | null {

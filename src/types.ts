@@ -1,7 +1,11 @@
 export type Usuario = {
     id_usuario: number
     nombres: string
+    apellidos: string | null
+    cedula: string | null
+    rol: string
     clave_pin: string
+    creado_en?: string
 }
 
 export type GpsLocation = {

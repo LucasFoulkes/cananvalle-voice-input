@@ -26,3 +26,17 @@ export function logout() {
 export function isAuthenticated(): boolean {
   return getCurrentUser() !== null
 }
+
+export function hasRole(allowedRoles: string[]): boolean {
+  const user = getCurrentUser()
+  if (!user) return false
+  return allowedRoles.includes(user.rol)
+}
+
+export function isControlCalidad(): boolean {
+  return hasRole(['control de calidad', 'sudo'])
+}
+
+export function isSudo(): boolean {
+  return hasRole(['sudo'])
+}

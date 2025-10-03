@@ -2,8 +2,8 @@ import * as React from 'react'
 import { Outlet, createRootRoute, useNavigate, useLocation } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Link } from "@tanstack/react-router";
-import { Pencil, ClipboardList, LogOut } from 'lucide-react'
-import { isAuthenticated, logout, getCurrentUser } from '@/lib/auth'
+import { Pencil, ClipboardList, LogOut, ShieldCheck } from 'lucide-react'
+import { isAuthenticated, logout, getCurrentUser, isControlCalidad } from '@/lib/auth'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 export const Route = createRootRoute({
@@ -16,6 +16,7 @@ function RootComponent() {
   const isLoginPage = location.pathname === '/login'
   const [showLogoutDialog, setShowLogoutDialog] = React.useState(false)
   const currentUser = getCurrentUser()
+  const hasControlCalidadAccess = isControlCalidad()
 
   React.useEffect(() => {
     if (!isAuthenticated() && !isLoginPage) {
@@ -29,15 +30,21 @@ function RootComponent() {
     navigate({ to: '/login' })
   }
 
-  const navItems = [
+  const baseNavItems = [
     { to: '/', label: 'Entrada', Icon: Pencil },
     { to: '/observaciones', label: 'Observaciones', Icon: ClipboardList },
-  ] as const
+  ]
+
+  const navItems = hasControlCalidadAccess
+    ? [...baseNavItems, { to: '/control-calidad', label: 'Control', Icon: ShieldCheck }]
+    : baseNavItems
 
   // Don't show nav on login page
   if (isLoginPage) {
     return <Outlet />
   }
+
+  const gridCols = hasControlCalidadAccess ? 'grid-cols-4' : 'grid-cols-3'
 
   return (
     <React.Fragment>
@@ -45,7 +52,7 @@ function RootComponent() {
         <main className='min-h-0 overflow-y-auto'>
           <Outlet />
         </main>
-        <nav className='grid grid-cols-3 w-full pb-5 px-3 bg-indigo-600 rounded-t-lg items-center gap-1 p-1'>
+        <nav className={`grid ${gridCols} w-full pb-5 px-3 bg-indigo-600 rounded-t-lg items-center gap-1 p-1`}>
           {navItems.map(({ to, label, Icon }) => (
             <Link
               key={to}
