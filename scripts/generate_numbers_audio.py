@@ -1,13 +1,14 @@
-"""Generate MP3 files for Spanish numbers 1..100 using ElevenLabs.
+"""Generate MP3 files for Spanish numbers 0..300 using ElevenLabs.
 
-Outputs to public/audio/numbers/<n>.mp3
+Outputs to public/audio/numbers/<n>.mp3 (e.g. 175.mp3 -> "ciento setenta y cinco").
 
-Optional: --components flag will also create reusable segments (tens, units,
-"treinta y", etc.) inside public/audio/numbers/components/
+Optional: --components flag creates reusable segments (tens, tens + ' y', units)
+inside public/audio/numbers/components/ (still limited to 30..90 tens + units).
 
 Examples:
-    python scripts/generate_numbers_audio.py           # just 1..100
-    python scripts/generate_numbers_audio.py --force   # overwrite existing
+    python scripts/generate_numbers_audio.py                # 0..300 (skip existing)
+    python scripts/generate_numbers_audio.py --force        # overwrite all 0..300
+    python scripts/generate_numbers_audio.py --start 150 --end 200
     python scripts/generate_numbers_audio.py --components
 """
 from __future__ import annotations
@@ -114,10 +115,10 @@ def parse_args():
         help="Also generate component segments (tens, tens+' y', units)",
     )
     p.add_argument(
-        "--start", type=int, default=1, help="Start number (inclusive, default 1)"
+        "--start", type=int, default=0, help="Start number (inclusive, default 0)"
     )
     p.add_argument(
-        "--end", type=int, default=100, help="End number (inclusive, default 100)"
+        "--end", type=int, default=300, help="End number (inclusive, default 300)"
     )
     return p.parse_args()
 
@@ -127,8 +128,11 @@ def main():
     ensure_dirs()
     client = get_client()
 
-    start = max(1, args.start)
-    end = min(100, args.end)
+    # Clamp to supported range 0..300
+    start = max(0, args.start)
+    end = min(300, args.end)
+    if start > end:
+        raise SystemExit("Start cannot be greater than end")
     for n in range(start, end + 1):
         wrote, path, text = generate_number_audio(client, n, args.force)
         status = "wrote" if wrote else "skip"
