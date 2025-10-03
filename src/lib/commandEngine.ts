@@ -2,6 +2,7 @@ import { parseSpanishNumber } from '@/lib/spanishNumbers'
 
 export const HIERARCHY = ['finca', 'bloque', 'cama'] as const
 export const ESTADO_COMMANDS = ['arroz', 'arveja', 'garbanzo', 'color', 'abierto'] as const
+export const NAVIGATION_COMMANDS = ['observaciones'] as const
 export const COMMANDS = [...HIERARCHY, ...ESTADO_COMMANDS, 'borrar'] as const
 
 export type ContextKey = typeof HIERARCHY[number]
@@ -10,6 +11,7 @@ export type InterpretationEvent =
     | { type: 'context'; key: ContextKey; value: string }
     | { type: 'estado'; estado: string; cantidad: number }
     | { type: 'undo' }
+    | { type: 'navigate'; to: string }
 
 export type InterpretationResult = {
     buffer: string
@@ -31,6 +33,16 @@ export function interpretVoiceText(prevBuffer: string, text: string): Interpreta
         return {
             buffer: '',
             event: { type: 'undo' },
+        }
+    }
+
+    // Check for navigation commands (no parameters needed)
+    for (const navCmd of NAVIGATION_COMMANDS) {
+        if (new RegExp(`\\b${navCmd}\\b`, 'i').test(buffer)) {
+            return {
+                buffer: '',
+                event: { type: 'navigate', to: `/${navCmd}` },
+            }
         }
     }
 

@@ -30,11 +30,11 @@ function RootComponent() {
             >
               <Button
                 className='
-                      bg-indigo-500 text-white transition-colors w-full group-data-[active=true]:bg-indigo-400 '
+                      bg-indigo-500 text-white transition-colors w-full group-data-[active=true]:bg-indigo-400 flex flex-col gap-1 h-auto py-2'
                 aria-label={label}
               >
                 <Icon />
-                <span className='sr-only'>{label}</span>
+                <span className='text-[10px]'>{label}</span>
               </Button>
             </Link>
           ))}

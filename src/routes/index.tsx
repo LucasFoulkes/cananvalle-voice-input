@@ -1,10 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useCallback, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { Observation } from '@/types'
 import { useVosk } from '@/hooks/useVosk'
 import TileButton from '@/components/TileButton'
 import { interpretVoiceText, HIERARCHY } from '@/lib/commandEngine'
+import { Mic, Loader2 } from 'lucide-react'
+import { AudioVisualizer } from '@/components/AudioVisualizer'
 
 type Location = {
     finca: string
@@ -12,11 +14,14 @@ type Location = {
     cama: string
 }
 
+type LoadingState = 'idle' | 'loading' | 'ready'
+
 export const Route = createFileRoute('/')({
     component: RouteComponent,
 })
 
 function RouteComponent() {
+    const navigate = useNavigate()
     const [location, setLocation] = useState<Location>({
         finca: '',
         bloque: '',
@@ -33,6 +38,7 @@ function RouteComponent() {
     })
     const [command, setCommand] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
+    const [loadingState, setLoadingState] = useState<LoadingState>('idle')
 
     useEffect(() => {
         try {
@@ -56,6 +62,14 @@ function RouteComponent() {
         setCommand(buffer)
 
         if (!event) return
+
+        // Handle navigation commands
+        if (event.type === 'navigate') {
+            navigate({ to: event.to })
+            setCommand('')
+            setErrorMessage('')
+            return
+        }
 
         // Handle location context updates using hierarchy
         if (event.type === 'context') {
@@ -119,7 +133,19 @@ function RouteComponent() {
         }
     }, [command, observaciones.length])
 
-    const { isListening, start, stop, partialTranscript, transcript } = useVosk({ onResult: onVoiceText })
+    const { isListening, start: voskStart, stop, audioContext, mediaStream, partialTranscript } = useVosk({ onResult: onVoiceText })
+
+    const start = async () => {
+        setLoadingState('loading')
+        await voskStart()
+        setLoadingState('ready')
+    }
+
+    useEffect(() => {
+        if (!isListening) {
+            setLoadingState('idle')
+        }
+    }, [isListening])
 
     // Today's sums for selected location
     const sums = observaciones.reduce((acc, o) => {
@@ -137,22 +163,40 @@ function RouteComponent() {
                 <TileButton label='BLOQUE' value={location.bloque || '-'} square labelClassName='relative top-1' />
                 <TileButton label='CAMA' value={location.cama || '-'} square />
             </div>
-            <div className='grid grid-cols-2 gap-1'>
-                <TileButton label='ARROZ' value={sums.arroz} />
-                <TileButton label='ARVEJA' value={sums.arveja} />
-                <TileButton label='GARBANZO' value={sums.garbanzo} />
-                <TileButton label='COLOR' value={sums.color} />
-                <TileButton label='ABIERTO' value={sums.abierto} />
+            <div className='grid grid-cols-3 gap-1'>
+                <TileButton label='ARROZ' value={sums.arroz} square />
+                <TileButton label='ARVEJA' value={sums.arveja} square />
+                <TileButton label='GARBANZO' value={sums.garbanzo} square />
+                <TileButton label='COLOR' value={sums.color} square />
+                <TileButton label='ABIERTO' value={sums.abierto} square />
             </div>
             <Button
-                className={`w-full h-24 text-left text-2xl text-white border-none px-3 flex-1 ${isListening ? 'bg-blue-500' : ''} ${errorMessage ? 'bg-red-500' : ''}`}
+                className={`w-full text-white border-none px-3 flex-1 flex flex-col items-center justify-center gap-4 relative ${isListening ? 'bg-blue-500' : ''} ${errorMessage ? 'bg-red-500' : ''} ${loadingState === 'loading' ? 'bg-yellow-500' : ''}`}
                 onClick={isListening ? stop : start}
+                disabled={loadingState === 'loading'}
             >
-                <div className='w-full'>
-                    <div className='truncate'>
-                        {errorMessage || (isListening ? (partialTranscript || 'Hable') : (transcript || 'Toca para hablar…'))}
-                    </div>
-                </div>
+                {loadingState === 'loading' && (
+                    <>
+                        <Loader2 className='size-32 opacity-50 animate-spin' />
+                        <span className='text-xs'>Cargando...</span>
+                    </>
+                )}
+                {loadingState === 'ready' && isListening && (
+                    <>
+                        <div className='absolute inset-0'>
+                            <AudioVisualizer isListening={isListening} audioContext={audioContext} stream={mediaStream} />
+                        </div>
+                        <div className='absolute bottom-4 left-0 right-0 text-center text-white text-sm px-4'>
+                            {partialTranscript || command || 'Escuchando...'}
+                        </div>
+                    </>
+                )}
+                {loadingState === 'idle' && (
+                    <>
+                        <Mic className='size-32 opacity-50' />
+                        <span className='text-xs'>Toca para hablar</span>
+                    </>
+                )}
             </Button>
         </div >
     )

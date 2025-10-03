@@ -22,11 +22,24 @@ export function TileButton({
     valueClassName,
     ...buttonProps
 }: TileButtonProps) {
+    const [isFlashing, setIsFlashing] = React.useState(false)
+    const prevValueRef = React.useRef(value)
+
+    React.useEffect(() => {
+        if (prevValueRef.current !== value && prevValueRef.current !== undefined) {
+            setIsFlashing(true)
+            const timer = setTimeout(() => setIsFlashing(false), 500)
+            return () => clearTimeout(timer)
+        }
+        prevValueRef.current = value
+    }, [value])
+
     return (
         <Button
             className={cn(
-                'flex flex-col justify-center items-center h-fit py-1 gap-1',
+                'flex flex-col justify-center items-center h-fit py-1 gap-1 transition-colors duration-500',
                 square && 'aspect-square',
+                isFlashing && 'bg-blue-500',
                 className,
             )}
             {...buttonProps}

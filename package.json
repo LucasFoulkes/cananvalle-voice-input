@@ -21,6 +21,7 @@
     "lucide-react": "^0.544.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-voice-visualizer": "^2.0.8",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.13",
     "vosk-browser": "^0.0.8"
