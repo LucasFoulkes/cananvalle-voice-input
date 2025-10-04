@@ -44,8 +44,8 @@ export async function getUserTimelines(date: string = new Date().toISOString().s
   if (usersError) throw usersError
   if (!users || users.length === 0) return []
 
-  const startOfDay = `${date}T00:00:00`
-  const endOfDay = `${date}T23:59:59`
+  const startOfDay = `${date}T00:00:00.000Z`
+  const endOfDay = `${date}T23:59:59.999Z`
 
   // Get observations for the day grouped by user and cama
   const { data: observations, error: obsError } = await supabase

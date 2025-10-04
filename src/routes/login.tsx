@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { validatePin, getUsuarios } from '@/services/usuarioService'
 
@@ -19,15 +20,8 @@ function LoginComponent() {
     getUsuarios().catch(console.error)
   }, [])
 
-  useEffect(() => {
-    // Auto-submit when PIN is complete (4 digits)
-    if (pin.length === 4) {
-      handleLogin()
-    }
-  }, [pin])
-
-  const handleLogin = async () => {
-    if (pin.length !== 4) return
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
 
     setError('')
     setLoading(true)
@@ -53,32 +47,31 @@ function LoginComponent() {
   return (
     <div className='min-h-screen bg-black text-white flex items-center justify-center p-4'>
       <Card className='w-full max-w-md bg-zinc-900 border-zinc-700 text-white'>
-        <CardContent>
-          <div className='space-y-6'>
+        <CardContent className='pt-6'>
+          <form onSubmit={handleLogin} className='space-y-6'>
             <div className='flex flex-col items-center space-y-4'>
               <label className='text-sm text-zinc-400'>Ingrese su PIN</label>
-              <InputOTP
-                maxLength={4}
+              <Input
+                type='password'
                 value={pin}
-                onChange={(value) => setPin(value)}
+                onChange={(e) => setPin(e.target.value)}
+                className='bg-zinc-800 border-zinc-700 text-white'
                 disabled={loading}
                 autoFocus
-              >
-                <InputOTPGroup>
-                  <InputOTPSlot index={0} className='bg-zinc-800 border-zinc-700 text-white text-2xl w-14 h-14' />
-                  <InputOTPSlot index={1} className='bg-zinc-800 border-zinc-700 text-white text-2xl w-14 h-14' />
-                  <InputOTPSlot index={2} className='bg-zinc-800 border-zinc-700 text-white text-2xl w-14 h-14' />
-                  <InputOTPSlot index={3} className='bg-zinc-800 border-zinc-700 text-white text-2xl w-14 h-14' />
-                </InputOTPGroup>
-              </InputOTP>
+                autoComplete='off'
+              />
             </div>
             {error && (
               <p className='text-red-400 text-sm text-center'>{error}</p>
             )}
-            {loading && (
-              <p className='text-zinc-400 text-sm text-center'>Verificando...</p>
-            )}
-          </div>
+            <Button
+              type='submit'
+              className='w-full bg-indigo-600 hover:bg-indigo-700'
+              disabled={loading}
+            >
+              {loading ? 'Verificando...' : 'Ingresar'}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>

@@ -69,13 +69,31 @@ const VIBRATION_PATTERNS = {
     abierto: [100]
 }
 
+// Request vibration permission on first use (Android only - iOS doesn't support vibration API)
+let vibrationRequested = false
+
 function vibrate(pattern: number[]) {
-    if (navigator.vibrate) {
+    if (!navigator.vibrate) {
+        console.log('Vibration API not supported on this device')
+        return
+    }
+
+    // Request permission on first use
+    if (!vibrationRequested) {
+        vibrationRequested = true
+        // Trigger a small test vibration to request permission
         try {
-            navigator.vibrate(pattern)
+            navigator.vibrate(1)
         } catch (e) {
-            console.warn('Vibration failed:', e)
+            console.warn('Vibration permission failed:', e)
         }
+    }
+
+    // Perform actual vibration
+    try {
+        navigator.vibrate(pattern)
+    } catch (e) {
+        console.warn('Vibration failed:', e)
     }
 }
 
