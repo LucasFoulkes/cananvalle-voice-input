@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -11,14 +11,22 @@ type GpsPoint = {
   creado_en: string
 }
 
+type UserInfo = {
+  id_usuario: string
+  nombres: string
+  apellidos: string | null
+}
+
 type Props = {
   points: GpsPoint[]
   userColors: Record<string, string>
+  users: UserInfo[]
 }
 
-export function GpsMap({ points, userColors }: Props) {
+export function GpsMap({ points, userColors, users }: Props) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
+  const [timeFilter, setTimeFilter] = useState(100) // Percentage 0-100
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
@@ -56,8 +64,17 @@ export function GpsMap({ points, userColors }: Props) {
 
     const markers: (L.Circle | L.CircleMarker)[] = []
 
+    // Sort points by time
+    const sortedPoints = [...points].sort((a, b) =>
+      new Date(a.creado_en).getTime() - new Date(b.creado_en).getTime()
+    )
+
+    // Calculate how many points to show based on slider
+    const pointsToShow = Math.ceil(sortedPoints.length * (timeFilter / 100))
+    const filteredPoints = sortedPoints.slice(0, pointsToShow)
+
     // Add markers for each point
-    points.forEach(point => {
+    filteredPoints.forEach(point => {
       const color = point.usuario_id ? userColors[point.usuario_id] || '#3388ff' : '#3388ff'
 
       // Calculate opacity based on precision (larger precision = more transparent)
@@ -102,9 +119,66 @@ export function GpsMap({ points, userColors }: Props) {
         padding: [50, 50]
       })
     }
-  }, [points, userColors])
+  }, [points, userColors, timeFilter])
+
+  // Get time range for display
+  const getTimeRange = () => {
+    if (points.length === 0) return { start: '', end: '' }
+
+    const sortedPoints = [...points].sort((a, b) =>
+      new Date(a.creado_en).getTime() - new Date(b.creado_en).getTime()
+    )
+
+    const pointsToShow = Math.ceil(sortedPoints.length * (timeFilter / 100))
+    const filteredPoints = sortedPoints.slice(0, pointsToShow)
+
+    if (filteredPoints.length === 0) return { start: '', end: '' }
+
+    const start = new Date(filteredPoints[0].creado_en)
+    const end = new Date(filteredPoints[filteredPoints.length - 1].creado_en)
+
+    const formatTime = (date: Date) => {
+      return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+    }
+
+    return { start: formatTime(start), end: formatTime(end) }
+  }
+
+  const timeRange = getTimeRange()
 
   return (
-    <div ref={mapRef} className='h-[500px] w-full rounded-lg' />
+    <div className='flex flex-col gap-2'>
+      <div ref={mapRef} className='h-[500px] w-full rounded-lg' />
+      <div className='px-4 pb-2'>
+        <div className='flex items-center justify-between text-xs text-zinc-400 mb-1'>
+          <span>{timeRange.start}</span>
+          <span className='text-white'>{Math.ceil(points.length * (timeFilter / 100))} / {points.length} puntos</span>
+          <span>{timeRange.end}</span>
+        </div>
+        <input
+          type='range'
+          min='0'
+          max='100'
+          value={timeFilter}
+          onChange={(e) => setTimeFilter(Number(e.target.value))}
+          className='w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500'
+        />
+      </div>
+      <div className='px-4 pb-2'>
+        <div className='flex flex-wrap gap-3'>
+          {users.map(user => (
+            <div key={user.id_usuario} className='flex items-center gap-2'>
+              <div
+                className='w-3 h-3 rounded-full'
+                style={{ backgroundColor: userColors[user.id_usuario] || '#3388ff' }}
+              />
+              <span className='text-xs text-white'>
+                {user.nombres} {user.apellidos || ''}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }

@@ -9,6 +9,13 @@ type Props = {
   timelines: UserTimeline[]
 }
 
+// Parse timestamp as local time (not UTC)
+function parseLocalTime(timestamp: string): Date {
+  // If timestamp has timezone info (ends with Z or +/-), strip it and parse as local
+  const cleaned = timestamp.replace(/Z$|[+-]\d{2}:\d{2}$/, '')
+  return new Date(cleaned)
+}
+
 export function UserTimelineView({ timelines }: Props) {
   const [detailsUserId, setDetailsUserId] = useState<number | null>(null)
 
@@ -26,8 +33,8 @@ export function UserTimelineView({ timelines }: Props) {
 
   timelines.forEach(timeline => {
     timeline.segments.forEach(segment => {
-      const firstTime = new Date(segment.first_observation).getTime()
-      const lastTime = new Date(segment.last_observation).getTime()
+      const firstTime = parseLocalTime(segment.first_observation).getTime()
+      const lastTime = parseLocalTime(segment.last_observation).getTime()
       if (firstTime < earliestTime) earliestTime = firstTime
       if (lastTime > latestTime) latestTime = lastTime
     })
@@ -40,7 +47,7 @@ export function UserTimelineView({ timelines }: Props) {
   const duration = timeEnd - timeStart
 
   const getPosition = (timestamp: string) => {
-    const time = new Date(timestamp).getTime()
+    const time = parseLocalTime(timestamp).getTime()
     return ((time - timeStart) / duration) * 100
   }
 
@@ -75,7 +82,7 @@ export function UserTimelineView({ timelines }: Props) {
         <div className='space-y-6'>
           {timelines.map(timeline => {
             // Calculate overall stats
-            const allTimes = timeline.segments.map(s => new Date(s.last_observation).getTime() - new Date(s.first_observation).getTime())
+            const allTimes = timeline.segments.map(s => parseLocalTime(s.last_observation).getTime() - parseLocalTime(s.first_observation).getTime())
             allTimes.sort((a, b) => a - b)
             const medianTime = allTimes.length > 0 ? allTimes[Math.floor(allTimes.length / 2)] / (1000 * 60) : 0
 
@@ -173,11 +180,11 @@ export function UserTimelineView({ timelines }: Props) {
                   return Object.entries(groupedByFinca).map(([finca, bloques]) => {
                     // Calculate finca-level stats
                     const allFincaSegments = Object.values(bloques).flat()
-                    const fincaFirstTime = new Date(Math.min(...allFincaSegments.map(s => new Date(s.first_observation).getTime())))
-                    const fincaLastTime = new Date(Math.max(...allFincaSegments.map(s => new Date(s.last_observation).getTime())))
+                    const fincaFirstTime = new Date(Math.min(...allFincaSegments.map(s => parseLocalTime(s.first_observation).getTime())))
+                    const fincaLastTime = new Date(Math.max(...allFincaSegments.map(s => parseLocalTime(s.last_observation).getTime())))
                     const bloqueCount = Object.keys(bloques).length
                     const fincaTotalTime = allFincaSegments.reduce((sum, s) => {
-                      return sum + (new Date(s.last_observation).getTime() - new Date(s.first_observation).getTime())
+                      return sum + (parseLocalTime(s.last_observation).getTime() - parseLocalTime(s.first_observation).getTime())
                     }, 0)
                     const fincaAvgTimePerBloque = Math.round(fincaTotalTime / bloqueCount / (1000 * 60))
                     const fincaTotalObs = allFincaSegments.reduce((sum, s) => sum + s.observation_count, 0)
@@ -196,10 +203,10 @@ export function UserTimelineView({ timelines }: Props) {
                         </div>
                         {Object.entries(bloques).map(([bloque, segments]) => {
                           // Calculate bloque-level stats
-                          const bloqueFirstTime = new Date(Math.min(...segments.map(s => new Date(s.first_observation).getTime())))
-                          const bloqueLastTime = new Date(Math.max(...segments.map(s => new Date(s.last_observation).getTime())))
+                          const bloqueFirstTime = new Date(Math.min(...segments.map(s => parseLocalTime(s.first_observation).getTime())))
+                          const bloqueLastTime = new Date(Math.max(...segments.map(s => parseLocalTime(s.last_observation).getTime())))
                           const bloqueTotalTime = segments.reduce((sum, s) => {
-                            return sum + (new Date(s.last_observation).getTime() - new Date(s.first_observation).getTime())
+                            return sum + (parseLocalTime(s.last_observation).getTime() - parseLocalTime(s.first_observation).getTime())
                           }, 0)
                           const bloqueTotalTimeMin = Math.round(bloqueTotalTime / (1000 * 60))
                           const bloqueAvgTimePerCama = Math.round(bloqueTotalTime / segments.length / (1000 * 60))
@@ -219,8 +226,8 @@ export function UserTimelineView({ timelines }: Props) {
                               </div>
                               <div className='grid grid-cols-1 gap-2'>
                                 {segments.map((segment, idx) => {
-                                  const firstTime = new Date(segment.first_observation)
-                                  const lastTime = new Date(segment.last_observation)
+                                  const firstTime = parseLocalTime(segment.first_observation)
+                                  const lastTime = parseLocalTime(segment.last_observation)
                                   const timeDiff = Math.round((lastTime.getTime() - firstTime.getTime()) / (1000 * 60))
 
                                   const firstTimeStr = `${firstTime.getHours()}:${String(firstTime.getMinutes()).padStart(2, '0')}`

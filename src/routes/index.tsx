@@ -112,7 +112,7 @@ function getLocalISOString(): string {
 }
 
 // Function to capture GPS location
-async function captureGpsLocation(): Promise<GpsLocation | null> {
+async function captureGpsLocation(timestamp: string): Promise<GpsLocation | null> {
     return new Promise((resolve) => {
         if (!navigator.geolocation) {
             resolve(null)
@@ -130,7 +130,7 @@ async function captureGpsLocation(): Promise<GpsLocation | null> {
                     longitud: position.coords.longitude,
                     precision: position.coords.accuracy,
                     altitud: position.coords.altitude,
-                    creado_en: getLocalISOString()
+                    creado_en: timestamp
                 }
                 resolve(gps)
             },
@@ -343,7 +343,7 @@ function RouteComponent() {
                     const locationSnapshot = { ...currentLocation }
                     const timestamp = getLocalISOString()
 
-                    captureGpsLocation().then(gps => {
+                    captureGpsLocation(timestamp).then(gps => {
                         setObservaciones(prev => [...prev, {
                             fecha: timestamp,
                             ...locationSnapshot,
@@ -368,7 +368,7 @@ function RouteComponent() {
     const start = async () => {
         setLoadingState('loading')
         // Request GPS permission on user gesture (button click)
-        await captureGpsLocation()
+        await captureGpsLocation(getLocalISOString())
         await voskStart()
         setLoadingState('ready')
     }
@@ -429,10 +429,11 @@ function RouteComponent() {
                 return
             }
 
-            const gps = await captureGpsLocation()
+            const timestamp = getLocalISOString()
+            const gps = await captureGpsLocation(timestamp)
 
             setObservaciones(prev => [...prev, {
-                fecha: getLocalISOString(),
+                fecha: timestamp,
                 ...location,
                 estado: manualInputDialog.key,
                 cantidad,

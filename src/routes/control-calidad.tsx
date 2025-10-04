@@ -408,7 +408,15 @@ function ControlCalidadComponent() {
               <Loader2 className='animate-spin text-zinc-400' size={32} />
             </div>
           ) : (
-            <GpsMap points={gpsPoints} userColors={userColors} />
+            <GpsMap
+              points={gpsPoints}
+              userColors={userColors}
+              users={timelines.map(t => ({
+                id_usuario: String(t.id_usuario),
+                nombres: t.nombres,
+                apellidos: t.apellidos
+              }))}
+            />
           )}
         </DialogContent>
       </Dialog>
