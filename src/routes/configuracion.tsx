@@ -275,7 +275,7 @@ function RouteComponent() {
     if (!ctx) return
 
     const scale = 8
-    const rowHeight = 11
+    const rowHeight = 9
     const maxLength = Math.max(...camas.map(c => c.largo_metros))
     const numRows = Math.ceil(camas.length / 2)
 
