@@ -668,7 +668,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className='flex flex-1 flex-col h-full p-2 gap-1'>
+    <div className='flex flex-1 flex-col h-full p-2 gap-1 overflow-hidden'>
       <div className='grid grid-cols-2 gap-1'>
         {/* Finca Combobox */}
         <div className='flex flex-col gap-1'>
@@ -813,8 +813,8 @@ function RouteComponent() {
 
       {/* Canvas visualization */}
       {selectedBloque && camas.length > 0 && (
-        <div className='flex flex-col gap-1'>
-          <div className='flex justify-center items-center bg-zinc-900 rounded-lg p-0 w-full h-full overflow-hidden'>
+        <div className='flex flex-col gap-1 flex-1 min-h-0'>
+          <div className='flex justify-center items-center bg-zinc-900 rounded-lg p-2 w-full flex-1 overflow-hidden'>
             <canvas
               ref={canvasRef}
               width={900}
@@ -826,8 +826,7 @@ function RouteComponent() {
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
-              className='cursor-pointer touch-none'
-              style={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto' }}
+              className='cursor-pointer touch-none w-full h-full object-contain'
             />
           </div>
         </div>
