@@ -54,7 +54,7 @@ export function GpsMap({ points, userColors }: Props) {
       }
     })
 
-    const markers: L.Circle[] = []
+    const markers: (L.Circle | L.CircleMarker)[] = []
 
     // Add markers for each point
     points.forEach(point => {

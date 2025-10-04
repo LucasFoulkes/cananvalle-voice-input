@@ -97,7 +97,7 @@ function vibrate(pattern: number[]) {
     }
 }
 
-// Get local time as ISO string (without timezone conversion)
+// Get local time as ISO string (for localStorage - no timezone)
 function getLocalISOString(): string {
     const now = new Date()
     const year = now.getFullYear()

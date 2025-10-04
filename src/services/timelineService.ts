@@ -34,7 +34,7 @@ function generateColor(index: number): string {
   return colors[index % colors.length]
 }
 
-export async function getUserTimelines(date: string = new Date().toISOString().split('T')[0]): Promise<UserTimeline[]> {
+export async function getUserTimelines(date: string): Promise<UserTimeline[]> {
   // Get users with rol conteo
   const { data: users, error: usersError } = await supabase
     .from('usuario')

@@ -20,6 +20,15 @@ export const Route = createFileRoute('/control-calidad')({
   component: ControlCalidadComponent,
 })
 
+// Get local date as YYYY-MM-DD string (without timezone conversion)
+function getLocalDateString(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 function ControlCalidadComponent() {
   const navigate = useNavigate()
   const [showCreateDialog, setShowCreateDialog] = useState(false)
@@ -30,7 +39,7 @@ function ControlCalidadComponent() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [isUsersOpen, setIsUsersOpen] = useState(false)
   const [timelines, setTimelines] = useState<UserTimeline[]>([])
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString())
   const [showMapDialog, setShowMapDialog] = useState(false)
   const [gpsPoints, setGpsPoints] = useState<GpsPoint[]>([])
   const [loadingGps, setLoadingGps] = useState(false)
@@ -87,16 +96,22 @@ function ControlCalidadComponent() {
   }
 
   const goToPreviousDay = () => {
-    const date = new Date(selectedDate)
+    const date = new Date(selectedDate + 'T00:00:00')
     date.setDate(date.getDate() - 1)
-    setSelectedDate(date.toISOString().split('T')[0])
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    setSelectedDate(`${year}-${month}-${day}`)
   }
 
   const goToNextDay = () => {
-    const date = new Date(selectedDate)
+    const date = new Date(selectedDate + 'T00:00:00')
     date.setDate(date.getDate() + 1)
-    const nextDate = date.toISOString().split('T')[0]
-    const today = new Date().toISOString().split('T')[0]
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const nextDate = `${year}-${month}-${day}`
+    const today = getLocalDateString()
 
     // Only allow moving forward if next date is not in the future
     if (nextDate <= today) {
@@ -105,7 +120,7 @@ function ControlCalidadComponent() {
   }
 
   const isToday = () => {
-    const today = new Date().toISOString().split('T')[0]
+    const today = getLocalDateString()
     return selectedDate === today
   }
 
