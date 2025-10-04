@@ -148,7 +148,7 @@ export function UserTimelineView({ timelines }: Props) {
 
       {/* Details Dialog */}
       <Dialog open={detailsUserId !== null} onOpenChange={(open) => !open && setDetailsUserId(null)}>
-        <DialogContent className='max-w-4xl max-h-[80vh]'>
+        <DialogContent className='bg-zinc-900 text-white border-zinc-700'>
           <DialogHeader>
             <DialogTitle>
               {detailsTimeline && `${detailsTimeline.nombres} ${detailsTimeline.apellidos || ''}`}
@@ -217,7 +217,7 @@ export function UserTimelineView({ timelines }: Props) {
                                   {bloqueFirstTimeStr} - {bloqueLastTimeStr} • {bloqueTotalTimeMin}min • {bloqueAvgTimePerCama}min/cama • {bloqueAvgObsPerCama}obs/cama
                                 </div>
                               </div>
-                              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2'>
+                              <div className='grid grid-cols-1 gap-2'>
                                 {segments.map((segment, idx) => {
                                   const firstTime = new Date(segment.first_observation)
                                   const lastTime = new Date(segment.last_observation)
