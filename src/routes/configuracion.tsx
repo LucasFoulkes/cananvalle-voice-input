@@ -79,6 +79,10 @@ function RouteComponent() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [targetGrupo, setTargetGrupo] = useState<number | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [scale, setScale] = useState(1)
+  const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null)
+  const [lastTouchMidpoint, setLastTouchMidpoint] = useState<{ x: number, y: number } | null>(null)
 
   // Fetch fincas on mount
   useEffect(() => {
@@ -274,13 +278,13 @@ function RouteComponent() {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const scale = 8
-    const rowHeight = 9
+    const pixelsPerMeter = 8
+    const rowHeight = 10
     const maxLength = Math.max(...camas.map(c => c.largo_metros))
     const numRows = Math.ceil(camas.length / 2)
 
     // Calculate canvas dimensions based on content
-    const centerX = maxLength * scale + 60
+    const centerX = maxLength * pixelsPerMeter + 60
     const canvasWidth = centerX * 2
     const canvasHeight = numRows * rowHeight + 40
     const startY = 20
@@ -292,6 +296,11 @@ function RouteComponent() {
     const draw = () => {
       ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 
+      // Save context and apply transform
+      ctx.save()
+      ctx.translate(offset.x, offset.y)
+      ctx.scale(scale, scale)
+
       // Draw camas
       camas.forEach((cama, i) => {
         const row = Math.floor(i / 2)
@@ -301,7 +310,7 @@ function RouteComponent() {
         const isSelected = selectedCamas.has(cama.id_cama)
 
         const y = startY + row * rowHeight
-        const bedWidth = length * scale
+        const bedWidth = length * pixelsPerMeter
         const x = isOdd ? centerX - 40 - bedWidth : centerX + 40
 
         // Background color by grupo
@@ -323,7 +332,7 @@ function RouteComponent() {
         for (let m = 0; m <= length; m++) {
           const size = m % 10 === 0 ? 3 : m % 5 === 0 ? 2 : 1.5
           ctx.beginPath()
-          const dotX = isOdd ? x + bedWidth - (m * scale) : x + m * scale
+          const dotX = isOdd ? x + bedWidth - (m * pixelsPerMeter) : x + m * pixelsPerMeter
           ctx.arc(dotX, y, size, 0, Math.PI * 2)
           ctx.fill()
         }
@@ -346,23 +355,26 @@ function RouteComponent() {
           const isOdd = camaIndex % 2 === 0
           const length = cama.largo_metros
           const y = startY + row * rowHeight
-          const bedWidth = length * scale
+          const bedWidth = length * pixelsPerMeter
           const x = isOdd ? centerX - 40 - bedWidth : centerX + 40
 
           ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
           ctx.fillRect(x - 2, y - 6, bedWidth + 4, 12)
         })
       }
+
+      // Restore context
+      ctx.restore()
     }
 
     draw()
-  }, [camas, selectedCamas, grupos, bloques, selectedBloque])
+  }, [camas, selectedCamas, grupos, bloques, selectedBloque, scale, offset])
 
   const getCamaAtPosition = (x: number, y: number): number | null => {
-    const scale = 8
-    const rowHeight = 20
+    const pixelsPerMeter = 8
+    const rowHeight = 10
     const maxLength = Math.max(...camas.map(c => c.largo_metros))
-    const centerX = maxLength * scale + 60
+    const centerX = maxLength * pixelsPerMeter + 60
     const startY = 20
 
     for (let i = 0; i < camas.length; i++) {
@@ -371,7 +383,7 @@ function RouteComponent() {
       const isOdd = i % 2 === 0
       const bedY = startY + row * rowHeight
       const length = cama.largo_metros
-      const bedWidth = length * scale
+      const bedWidth = length * pixelsPerMeter
       const bedX = isOdd ? centerX - 40 - bedWidth : centerX + 40
 
       const numX = isOdd ? centerX - 20 : centerX + 20
@@ -461,90 +473,146 @@ function RouteComponent() {
     setDragStart(null)
   }
 
+  // Helper function to calculate distance between two touches
+  const getTouchDistance = (touches: React.TouchList) => {
+    const dx = touches[0].clientX - touches[1].clientX
+    const dy = touches[0].clientY - touches[1].clientY
+    return Math.sqrt(dx * dx + dy * dy)
+  }
+
+  // Helper function to get midpoint between two touches
+  const getTouchMidpoint = (touches: React.TouchList) => {
+    return {
+      x: (touches[0].clientX + touches[1].clientX) / 2,
+      y: (touches[0].clientY + touches[1].clientY) / 2
+    }
+  }
+
   // Touch event handlers
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const rect = canvas.getBoundingClientRect()
-    const touch = e.touches[0]
+    // Two-finger gesture for zoom/pan
+    if (e.touches.length === 2) {
+      e.preventDefault()
+      setLastTouchDistance(getTouchDistance(e.touches))
+      setLastTouchMidpoint(getTouchMidpoint(e.touches))
+      setDragStart(null) // Cancel any selection
+      return
+    }
 
-    // Account for canvas scaling
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
-    const x = (touch.clientX - rect.left) * scaleX
-    const y = (touch.clientY - rect.top) * scaleY
+    // Single finger for selection
+    if (e.touches.length === 1) {
+      e.preventDefault()
+      const rect = canvas.getBoundingClientRect()
+      const touch = e.touches[0]
 
-    const camaId = getCamaAtPosition(x, y)
+      // Account for canvas scaling and transform
+      const scaleX = canvas.width / rect.width
+      const scaleY = canvas.height / rect.height
+      const x = ((touch.clientX - rect.left) * scaleX - offset.x) / scale
+      const y = ((touch.clientY - rect.top) * scaleY - offset.y) / scale
 
-    if (camaId) {
-      setDragStart(camaId)
-      setSelectedCamas(new Set([camaId]))
+      const camaId = getCamaAtPosition(x, y)
+
+      if (camaId) {
+        setDragStart(camaId)
+        setSelectedCamas(new Set([camaId]))
+      }
     }
   }
 
   const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
     e.preventDefault()
-    if (!dragStart) return
-
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const rect = canvas.getBoundingClientRect()
-    const touch = e.touches[0]
+    // Two-finger gesture for zoom/pan
+    if (e.touches.length === 2) {
+      if (lastTouchDistance && lastTouchMidpoint) {
+        const newDistance = getTouchDistance(e.touches)
+        const newMidpoint = getTouchMidpoint(e.touches)
 
-    // Account for canvas scaling
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
-    const x = (touch.clientX - rect.left) * scaleX
-    const y = (touch.clientY - rect.top) * scaleY
+        // Calculate zoom
+        const zoomDelta = newDistance / lastTouchDistance
+        const newScale = Math.min(Math.max(scale * zoomDelta, 0.5), 5) // Limit scale between 0.5x and 5x
 
-    const camaId = getCamaAtPosition(x, y)
+        // Calculate pan
+        const dx = (newMidpoint.x - lastTouchMidpoint.x)
+        const dy = (newMidpoint.y - lastTouchMidpoint.y)
 
-    if (camaId) {
-      const startIndex = camas.findIndex(c => c.id_cama === dragStart)
-      const currentIndex = camas.findIndex(c => c.id_cama === camaId)
+        setScale(newScale)
+        setOffset({
+          x: offset.x + dx,
+          y: offset.y + dy
+        })
 
-      if (startIndex !== -1 && currentIndex !== -1) {
-        const startRow = Math.floor(startIndex / 2)
-        const currentRow = Math.floor(currentIndex / 2)
-        const minRow = Math.min(startRow, currentRow)
-        const maxRow = Math.max(startRow, currentRow)
+        setLastTouchDistance(newDistance)
+        setLastTouchMidpoint(newMidpoint)
+      }
+      return
+    }
 
-        const startIsOdd = startIndex % 2 === 0
-        const currentIsOdd = currentIndex % 2 === 0
+    // Single finger for selection
+    if (e.touches.length === 1 && dragStart) {
+      const rect = canvas.getBoundingClientRect()
+      const touch = e.touches[0]
 
-        const newSelected = new Set<number>()
+      // Account for canvas scaling and transform
+      const scaleX = canvas.width / rect.width
+      const scaleY = canvas.height / rect.height
+      const x = ((touch.clientX - rect.left) * scaleX - offset.x) / scale
+      const y = ((touch.clientY - rect.top) * scaleY - offset.y) / scale
 
-        // If on same row, check if we should include both sides
-        if (startRow === currentRow) {
-          // Same row - include only the beds between start and current
-          const minIndex = Math.min(startIndex, currentIndex)
-          const maxIndex = Math.max(startIndex, currentIndex)
-          for (let i = minIndex; i <= maxIndex; i++) {
-            if (i < camas.length) newSelected.add(camas[i].id_cama)
+      const camaId = getCamaAtPosition(x, y)
+
+      if (camaId) {
+        const startIndex = camas.findIndex(c => c.id_cama === dragStart)
+        const currentIndex = camas.findIndex(c => c.id_cama === camaId)
+
+        if (startIndex !== -1 && currentIndex !== -1) {
+          const startRow = Math.floor(startIndex / 2)
+          const currentRow = Math.floor(currentIndex / 2)
+          const minRow = Math.min(startRow, currentRow)
+          const maxRow = Math.max(startRow, currentRow)
+
+          const startIsOdd = startIndex % 2 === 0
+          const currentIsOdd = currentIndex % 2 === 0
+
+          const newSelected = new Set<number>()
+
+          // If on same row, check if we should include both sides
+          if (startRow === currentRow) {
+            // Same row - include only the beds between start and current
+            const minIndex = Math.min(startIndex, currentIndex)
+            const maxIndex = Math.max(startIndex, currentIndex)
+            for (let i = minIndex; i <= maxIndex; i++) {
+              if (i < camas.length) newSelected.add(camas[i].id_cama)
+            }
+          } else {
+            // Different rows - include beds based on which columns are touched
+            const includeOdd = startIsOdd || currentIsOdd
+            const includeEven = !startIsOdd || !currentIsOdd
+
+            for (let row = minRow; row <= maxRow; row++) {
+              const oddIndex = row * 2
+              const evenIndex = row * 2 + 1
+              if (includeOdd && oddIndex < camas.length) newSelected.add(camas[oddIndex].id_cama)
+              if (includeEven && evenIndex < camas.length) newSelected.add(camas[evenIndex].id_cama)
+            }
           }
-        } else {
-          // Different rows - include beds based on which columns are touched
-          const includeOdd = startIsOdd || currentIsOdd
-          const includeEven = !startIsOdd || !currentIsOdd
 
-          for (let row = minRow; row <= maxRow; row++) {
-            const oddIndex = row * 2
-            const evenIndex = row * 2 + 1
-            if (includeOdd && oddIndex < camas.length) newSelected.add(camas[oddIndex].id_cama)
-            if (includeEven && evenIndex < camas.length) newSelected.add(camas[evenIndex].id_cama)
-          }
+          setSelectedCamas(newSelected)
         }
-
-        setSelectedCamas(newSelected)
       }
     }
   }
 
   const handleTouchEnd = () => {
     setDragStart(null)
+    setLastTouchDistance(null)
+    setLastTouchMidpoint(null)
   }
 
   const handleAssignToGrupo = (grupoId: number) => {
