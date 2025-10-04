@@ -296,9 +296,12 @@ function RouteComponent() {
     canvas.height = canvasHeight
 
     const draw = () => {
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight)
-
       // Save context and apply transform
+      ctx.save()
+      ctx.setTransform(1, 0, 0, 1, 0, 0) // Reset transform
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight)
+      ctx.restore()
+
       ctx.save()
       ctx.translate(offset.x, offset.y)
       ctx.scale(scale, scale)
@@ -536,6 +539,10 @@ function RouteComponent() {
     // Two-finger gesture for zoom/pan
     if (e.touches.length === 2) {
       if (lastTouchDistance && lastTouchMidpoint) {
+        const canvas = canvasRef.current
+        if (!canvas) return
+
+        const rect = canvas.getBoundingClientRect()
         const newDistance = getTouchDistance(e.touches)
         const newMidpoint = getTouchMidpoint(e.touches)
 
@@ -543,14 +550,25 @@ function RouteComponent() {
         const zoomDelta = newDistance / lastTouchDistance
         const newScale = Math.min(Math.max(scale * zoomDelta, 0.5), 5) // Limit scale between 0.5x and 5x
 
+        // Calculate the point to zoom around (in canvas coordinates)
+        const scaleX = canvas.width / rect.width
+        const scaleY = canvas.height / rect.height
+        const zoomPointX = (newMidpoint.x - rect.left) * scaleX
+        const zoomPointY = (newMidpoint.y - rect.top) * scaleY
+
+        // Adjust offset to zoom around the midpoint
+        const scaleDiff = newScale / scale
+        const newOffsetX = zoomPointX - (zoomPointX - offset.x) * scaleDiff
+        const newOffsetY = zoomPointY - (zoomPointY - offset.y) * scaleDiff
+
         // Calculate pan
-        const dx = (newMidpoint.x - lastTouchMidpoint.x)
-        const dy = (newMidpoint.y - lastTouchMidpoint.y)
+        const dx = (newMidpoint.x - lastTouchMidpoint.x) * scaleX
+        const dy = (newMidpoint.y - lastTouchMidpoint.y) * scaleY
 
         setScale(newScale)
         setOffset({
-          x: offset.x + dx,
-          y: offset.y + dy
+          x: newOffsetX + dx,
+          y: newOffsetY + dy
         })
 
         setLastTouchDistance(newDistance)
