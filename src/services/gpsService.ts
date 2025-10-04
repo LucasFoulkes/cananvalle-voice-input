@@ -1,0 +1,30 @@
+import { supabase } from '@/lib/supabase'
+
+export type GpsPoint = {
+  id: string
+  latitud: number
+  longitud: number
+  precision: number
+  altitud: number | null
+  usuario_id: string | null
+  creado_en: string
+}
+
+export async function getGpsPointsForDate(date: string): Promise<GpsPoint[]> {
+  const startOfDay = `${date}T00:00:00.000Z`
+  const endOfDay = `${date}T23:59:59.999Z`
+
+  const { data, error } = await supabase
+    .from('puntos_gps')
+    .select('id, latitud, longitud, precision, altitud, usuario_id, creado_en')
+    .gte('creado_en', startOfDay)
+    .lte('creado_en', endOfDay)
+    .order('creado_en', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching GPS points:', error)
+    return []
+  }
+
+  return data || []
+}

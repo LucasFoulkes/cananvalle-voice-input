@@ -8,10 +8,12 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { ShieldCheck, UserPlus, Loader2, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ShieldCheck, UserPlus, Loader2, ChevronDown, ChevronLeft, ChevronRight, Map } from 'lucide-react'
 import { createUsuario, getAllUsuarios, type CreateUsuarioInput } from '@/services/usuarioManagementService'
 import { getUserTimelines, type UserTimeline } from '@/services/timelineService'
+import { getGpsPointsForDate, type GpsPoint } from '@/services/gpsService'
 import { UserTimelineView } from '@/components/UserTimeline'
+import { GpsMap } from '@/components/GpsMap'
 import type { Usuario } from '@/types'
 
 export const Route = createFileRoute('/control-calidad')({
@@ -29,6 +31,9 @@ function ControlCalidadComponent() {
   const [isUsersOpen, setIsUsersOpen] = useState(false)
   const [timelines, setTimelines] = useState<UserTimeline[]>([])
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+  const [showMapDialog, setShowMapDialog] = useState(false)
+  const [gpsPoints, setGpsPoints] = useState<GpsPoint[]>([])
+  const [loadingGps, setLoadingGps] = useState(false)
 
   const [formData, setFormData] = useState<CreateUsuarioInput>({
     nombres: '',
@@ -106,13 +111,38 @@ function ControlCalidadComponent() {
 
   const formatDisplayDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00')
-    return date.toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
+    const dayName = date.toLocaleDateString('es-ES', { weekday: 'long' })
+    const day = date.getDate()
+    const month = date.getMonth() + 1
+    const year = date.getFullYear()
+    return `${dayName} ${day}/${month}/${year}`
   }
+
+  const loadGpsPoints = async () => {
+    try {
+      setLoadingGps(true)
+      const points = await getGpsPointsForDate(selectedDate)
+      setGpsPoints(points)
+    } catch (err) {
+      console.error('Error loading GPS points:', err)
+    } finally {
+      setLoadingGps(false)
+    }
+  }
+
+  const handleOpenMap = () => {
+    setShowMapDialog(true)
+    loadGpsPoints()
+  }
+
+  // Generate colors for users
+  const userColors: Record<string, string> = {}
+  const colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316']
+  timelines.forEach((timeline, index) => {
+    if (timeline.id_usuario) {
+      userColors[String(timeline.id_usuario)] = colors[index % colors.length]
+    }
+  })
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -229,9 +259,19 @@ function ControlCalidadComponent() {
             >
               <ChevronLeft />
             </Button>
-            <span className='text-lg font-medium min-w-[300px] text-center capitalize'>
-              {formatDisplayDate(selectedDate)}
-            </span>
+            <div className='flex items-center gap-2'>
+              <span className='text-lg font-medium min-w-[300px] text-center capitalize'>
+                {formatDisplayDate(selectedDate)}
+              </span>
+              <Button
+                onClick={handleOpenMap}
+                variant='outline'
+                size='icon'
+                className='bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700'
+              >
+                <Map />
+              </Button>
+            </div>
             <Button
               onClick={goToNextDay}
               variant='outline'
@@ -343,6 +383,18 @@ function ControlCalidadComponent() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showMapDialog} onOpenChange={setShowMapDialog}>
+        <DialogContent className='bg-zinc-900 text-white border-zinc-700 p-0 overflow-hidden'>
+          {loadingGps ? (
+            <div className='flex justify-center py-8'>
+              <Loader2 className='animate-spin text-zinc-400' size={32} />
+            </div>
+          ) : (
+            <GpsMap points={gpsPoints} userColors={userColors} />
+          )}
         </DialogContent>
       </Dialog>
     </div>

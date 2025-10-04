@@ -82,11 +82,15 @@ export async function syncObservationToSupabase(observation: Observation) {
 
   const cama = camas[0]
 
+  // Get usuario_id from GPS or observation
+  const usuarioId = observation.gps?.usuario_id ? parseInt(observation.gps.usuario_id) : null
+
   // Insert observation
   const { data: obsData, error: obsError } = await supabase
     .from('observacion')
     .insert({
       id_cama: cama.id_cama,
+      id_usuario: usuarioId,
       tipo_observacion: tipoObservacion,
       cantidad: observation.cantidad,
       id_punto_gps: gpsId,
