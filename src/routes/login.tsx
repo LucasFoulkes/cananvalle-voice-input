@@ -1,10 +1,8 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
+import { Card, CardContent } from '@/components/ui/card'
 import { validatePin, getUsuarios } from '@/services/usuarioService'
-import { LogIn } from 'lucide-react'
 
 export const Route = createFileRoute('/login')({
   component: LoginComponent,
@@ -21,8 +19,16 @@ function LoginComponent() {
     getUsuarios().catch(console.error)
   }, [])
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+  useEffect(() => {
+    // Auto-submit when PIN is complete (4 digits)
+    if (pin.length === 4) {
+      handleLogin()
+    }
+  }, [pin])
+
+  const handleLogin = async () => {
+    if (pin.length !== 4) return
+
     setError('')
     setLoading(true)
 
@@ -38,6 +44,7 @@ function LoginComponent() {
       }
     } catch (err) {
       setError('Error al iniciar sesión')
+      setPin('')
     } finally {
       setLoading(false)
     }
@@ -46,40 +53,32 @@ function LoginComponent() {
   return (
     <div className='min-h-screen bg-black text-white flex items-center justify-center p-4'>
       <Card className='w-full max-w-md bg-zinc-900 border-zinc-700 text-white'>
-        <CardHeader>
-          <CardTitle className='text-center text-2xl'>
-            <LogIn className='inline-block mr-2' size={28} />
-            Iniciar Sesión
-          </CardTitle>
-        </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className='space-y-4'>
-            <div className='space-y-2'>
-              <Input
-                id='pin'
-                type='password'
-                inputMode='numeric'
-                pattern='[0-9]*'
-                placeholder='Ingrese su PIN'
+          <div className='space-y-6'>
+            <div className='flex flex-col items-center space-y-4'>
+              <label className='text-sm text-zinc-400'>Ingrese su PIN</label>
+              <InputOTP
+                maxLength={4}
                 value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                className='bg-zinc-800 border-zinc-700 text-white text-lg text-center tracking-widest'
-                autoComplete='off'
-                autoFocus
+                onChange={(value) => setPin(value)}
                 disabled={loading}
-              />
+                autoFocus
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} className='bg-zinc-800 border-zinc-700 text-white text-2xl w-14 h-14' />
+                  <InputOTPSlot index={1} className='bg-zinc-800 border-zinc-700 text-white text-2xl w-14 h-14' />
+                  <InputOTPSlot index={2} className='bg-zinc-800 border-zinc-700 text-white text-2xl w-14 h-14' />
+                  <InputOTPSlot index={3} className='bg-zinc-800 border-zinc-700 text-white text-2xl w-14 h-14' />
+                </InputOTPGroup>
+              </InputOTP>
             </div>
             {error && (
               <p className='text-red-400 text-sm text-center'>{error}</p>
             )}
-            <Button
-              type='submit'
-              className='w-full bg-indigo-600 hover:bg-indigo-700'
-              disabled={loading || !pin}
-            >
-              {loading ? 'Verificando...' : 'Ingresar'}
-            </Button>
-          </form>
+            {loading && (
+              <p className='text-zinc-400 text-sm text-center'>Verificando...</p>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

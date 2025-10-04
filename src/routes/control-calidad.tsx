@@ -106,11 +106,12 @@ function ControlCalidadComponent() {
 
   const formatDisplayDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00')
-    const dayName = date.toLocaleDateString('es-ES', { weekday: 'long' })
-    const day = date.getDate()
-    const month = date.getMonth() + 1
-    const year = date.getFullYear()
-    return `${dayName} ${day}/${month}/${year}`
+    return date.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
   }
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -141,7 +142,7 @@ function ControlCalidadComponent() {
   }
 
   return (
-    <div className='h-full flex flex-col p-4 gap-4'>
+    <div className='h-full flex flex-col p-2 gap-1'>
       <Card className='bg-zinc-900 border-none text-white'>
         <CardHeader>
           <CardTitle className='flex items-center justify-between'>
