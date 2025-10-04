@@ -282,12 +282,14 @@ function RouteComponent() {
     const rowHeight = 10
     const maxLength = Math.max(...camas.map(c => c.largo_metros))
     const numRows = Math.ceil(camas.length / 2)
+    const numberWidth = 40 // Space for bed numbers in the middle
+    const padding = 10 // Minimal padding on edges
 
     // Calculate canvas dimensions based on content
-    const centerX = maxLength * pixelsPerMeter + 60
+    const centerX = maxLength * pixelsPerMeter + numberWidth / 2 + padding
     const canvasWidth = centerX * 2
-    const canvasHeight = numRows * rowHeight + 40
-    const startY = 20
+    const canvasHeight = numRows * rowHeight + padding * 2
+    const startY = padding
 
     // Update canvas size
     canvas.width = canvasWidth
@@ -311,7 +313,7 @@ function RouteComponent() {
 
         const y = startY + row * rowHeight
         const bedWidth = length * pixelsPerMeter
-        const x = isOdd ? centerX - 40 - bedWidth : centerX + 40
+        const x = isOdd ? centerX - numberWidth / 2 - bedWidth : centerX + numberWidth / 2
 
         // Background color by grupo
         if (grupoIndex !== -1) {
@@ -341,7 +343,8 @@ function RouteComponent() {
         ctx.fillStyle = isSelected ? '#fff' : '#ccc'
         ctx.font = isSelected ? 'bold 11px Arial' : '11px Arial'
         ctx.textAlign = 'center'
-        ctx.fillText(cama.nombre, isOdd ? centerX - 20 : centerX + 20, y + 4)
+        const numX = isOdd ? centerX - numberWidth / 4 : centerX + numberWidth / 4
+        ctx.fillText(cama.nombre, numX, y + 4)
       })
 
       // Draw selection highlight
@@ -356,7 +359,7 @@ function RouteComponent() {
           const length = cama.largo_metros
           const y = startY + row * rowHeight
           const bedWidth = length * pixelsPerMeter
-          const x = isOdd ? centerX - 40 - bedWidth : centerX + 40
+          const x = isOdd ? centerX - numberWidth / 2 - bedWidth : centerX + numberWidth / 2
 
           ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
           ctx.fillRect(x - 2, y - 6, bedWidth + 4, 12)
@@ -374,8 +377,10 @@ function RouteComponent() {
     const pixelsPerMeter = 8
     const rowHeight = 10
     const maxLength = Math.max(...camas.map(c => c.largo_metros))
-    const centerX = maxLength * pixelsPerMeter + 60
-    const startY = 20
+    const numberWidth = 40
+    const padding = 10
+    const centerX = maxLength * pixelsPerMeter + numberWidth / 2 + padding
+    const startY = padding
 
     for (let i = 0; i < camas.length; i++) {
       const cama = camas[i]
@@ -384,9 +389,9 @@ function RouteComponent() {
       const bedY = startY + row * rowHeight
       const length = cama.largo_metros
       const bedWidth = length * pixelsPerMeter
-      const bedX = isOdd ? centerX - 40 - bedWidth : centerX + 40
+      const bedX = isOdd ? centerX - numberWidth / 2 - bedWidth : centerX + numberWidth / 2
 
-      const numX = isOdd ? centerX - 20 : centerX + 20
+      const numX = isOdd ? centerX - numberWidth / 4 : centerX + numberWidth / 4
       const onNumber = x >= numX - 15 && x <= numX + 15 && y >= bedY - 6 && y <= bedY + 6
       const onBed = x >= bedX && x <= bedX + bedWidth && y >= bedY - 6 && y <= bedY + 6
 
@@ -781,7 +786,7 @@ function RouteComponent() {
       {/* Grupos display */}
       {selectedBloque && grupos.length > 0 && (
         <div className='flex flex-col gap-1'>
-          <div className='flex gap-1 overflow-x-auto p-1'>
+          <div className='flex gap-1 overflow-x-auto'>
             {grupos.map((grupo, index) => {
               const hasCamasInGrupo = camas.some(c => selectedCamas.has(c.id_cama) && c.id_grupo === grupo.id_grupo)
 
@@ -814,11 +819,9 @@ function RouteComponent() {
       {/* Canvas visualization */}
       {selectedBloque && camas.length > 0 && (
         <div className='flex flex-col gap-1 flex-1 min-h-0'>
-          <div className='flex justify-center items-center bg-zinc-900 rounded-lg p-2 w-full flex-1 overflow-hidden'>
+          <div className='flex justify-center items-center bg-zinc-900 rounded-lg w-full flex-1 overflow-hidden'>
             <canvas
               ref={canvasRef}
-              width={900}
-              height={550}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
