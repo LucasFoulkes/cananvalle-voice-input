@@ -97,6 +97,20 @@ function vibrate(pattern: number[]) {
     }
 }
 
+// Get local time as ISO string (without timezone conversion)
+function getLocalISOString(): string {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const seconds = String(now.getSeconds()).padStart(2, '0')
+    const ms = String(now.getMilliseconds()).padStart(3, '0')
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${ms}`
+}
+
 // Function to capture GPS location
 async function captureGpsLocation(): Promise<GpsLocation | null> {
     return new Promise((resolve) => {
@@ -116,7 +130,7 @@ async function captureGpsLocation(): Promise<GpsLocation | null> {
                     longitud: position.coords.longitude,
                     precision: position.coords.accuracy,
                     altitud: position.coords.altitude,
-                    creado_en: new Date().toISOString()
+                    creado_en: getLocalISOString()
                 }
                 resolve(gps)
             },
@@ -327,7 +341,7 @@ function RouteComponent() {
 
                     // Capture GPS and add observation asynchronously
                     const locationSnapshot = { ...currentLocation }
-                    const timestamp = new Date().toISOString()
+                    const timestamp = getLocalISOString()
 
                     captureGpsLocation().then(gps => {
                         setObservaciones(prev => [...prev, {
@@ -418,7 +432,7 @@ function RouteComponent() {
             const gps = await captureGpsLocation()
 
             setObservaciones(prev => [...prev, {
-                fecha: new Date().toISOString(),
+                fecha: getLocalISOString(),
                 ...location,
                 estado: manualInputDialog.key,
                 cantidad,

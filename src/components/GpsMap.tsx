@@ -61,24 +61,38 @@ export function GpsMap({ points, userColors }: Props) {
       const color = point.usuario_id ? userColors[point.usuario_id] || '#3388ff' : '#3388ff'
 
       // Calculate opacity based on precision (larger precision = more transparent)
-      // Max opacity 0.9 at 1m precision, very transparent at 2000m
+      // Solid at 1m precision, very transparent at higher precision (12x steeper slope)
       const minPrecision = 1
       const maxPrecision = 2000
       const normalizedPrecision = Math.min(Math.max(point.precision, minPrecision), maxPrecision)
       const transparency = (normalizedPrecision - minPrecision) / (maxPrecision - minPrecision)
-      const opacity = Math.max(0.9 - (transparency * 0.88), 0.02) // Range from 0.9 to 0.02
+      // Much steeper curve: raise transparency to power of 0.085 (12th root) to make it 12x steeper
+      const steeperTransparency = Math.pow(transparency, 0.085)
+      const opacity = Math.max(1 - steeperTransparency, 0.02) // Solid at 1m, very transparent at 2000m
 
-      // Use L.circle to display radius in meters (not pixels)
+      // Use L.circle to display radius in meters (not pixels) - no border
       const marker = L.circle([point.latitud, point.longitud], {
         radius: point.precision, // Radius in meters
         fillColor: color,
         color: color,
-        weight: 1,
-        opacity: opacity,
+        weight: 0,
+        opacity: 0,
         fillOpacity: opacity
       }).addTo(map)
 
       markers.push(marker)
+
+      // Add a small solid dot in the center
+      const centerDot = L.circleMarker([point.latitud, point.longitud], {
+        radius: 1, // 1 pixel radius
+        fillColor: color,
+        color: color,
+        weight: 0,
+        opacity: 1,
+        fillOpacity: 1
+      }).addTo(map)
+
+      markers.push(centerDot)
     })
 
     // Fit bounds to show all markers

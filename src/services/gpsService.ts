@@ -11,8 +11,8 @@ export type GpsPoint = {
 }
 
 export async function getGpsPointsForDate(date: string): Promise<GpsPoint[]> {
-  const startOfDay = `${date}T00:00:00.000Z`
-  const endOfDay = `${date}T23:59:59.999Z`
+  const startOfDay = `${date}T00:00:00.000`
+  const endOfDay = `${date}T23:59:59.999`
 
   const { data, error } = await supabase
     .from('puntos_gps')
