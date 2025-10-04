@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Outlet, createRootRoute, useNavigate, useLocation } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Link } from "@tanstack/react-router";
-import { Pencil, ClipboardList, LogOut, ShieldCheck } from 'lucide-react'
+import { Pencil, ClipboardList, LogOut, ShieldCheck, Settings } from 'lucide-react'
 import { isAuthenticated, logout, getCurrentUser, isControlCalidad } from '@/lib/auth'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
@@ -33,6 +33,7 @@ function RootComponent() {
   const baseNavItems = [
     { to: '/', label: 'Entrada', Icon: Pencil },
     { to: '/observaciones', label: 'Observaciones', Icon: ClipboardList },
+    { to: '/configuracion', label: 'Config', Icon: Settings },
   ]
 
   const navItems = hasControlCalidadAccess
@@ -44,7 +45,7 @@ function RootComponent() {
     return <Outlet />
   }
 
-  const gridCols = hasControlCalidadAccess ? 'grid-cols-4' : 'grid-cols-3'
+  const gridCols = hasControlCalidadAccess ? 'grid-cols-5' : 'grid-cols-4'
 
   return (
     <React.Fragment>

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ObservacionesRouteImport } from './routes/observaciones'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ControlCalidadRouteImport } from './routes/control-calidad'
+import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ObservacionesRoute = ObservacionesRouteImport.update({
@@ -29,6 +30,11 @@ const ControlCalidadRoute = ControlCalidadRouteImport.update({
   path: '/control-calidad',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConfiguracionRoute = ConfiguracionRouteImport.update({
+  id: '/configuracion',
+  path: '/configuracion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,12 +43,14 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/configuracion': typeof ConfiguracionRoute
   '/control-calidad': typeof ControlCalidadRoute
   '/login': typeof LoginRoute
   '/observaciones': typeof ObservacionesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/configuracion': typeof ConfiguracionRoute
   '/control-calidad': typeof ControlCalidadRoute
   '/login': typeof LoginRoute
   '/observaciones': typeof ObservacionesRoute
@@ -50,20 +58,33 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/configuracion': typeof ConfiguracionRoute
   '/control-calidad': typeof ControlCalidadRoute
   '/login': typeof LoginRoute
   '/observaciones': typeof ObservacionesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/control-calidad' | '/login' | '/observaciones'
+  fullPaths:
+    | '/'
+    | '/configuracion'
+    | '/control-calidad'
+    | '/login'
+    | '/observaciones'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/control-calidad' | '/login' | '/observaciones'
-  id: '__root__' | '/' | '/control-calidad' | '/login' | '/observaciones'
+  to: '/' | '/configuracion' | '/control-calidad' | '/login' | '/observaciones'
+  id:
+    | '__root__'
+    | '/'
+    | '/configuracion'
+    | '/control-calidad'
+    | '/login'
+    | '/observaciones'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConfiguracionRoute: typeof ConfiguracionRoute
   ControlCalidadRoute: typeof ControlCalidadRoute
   LoginRoute: typeof LoginRoute
   ObservacionesRoute: typeof ObservacionesRoute
@@ -92,6 +113,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ControlCalidadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/configuracion': {
+      id: '/configuracion'
+      path: '/configuracion'
+      fullPath: '/configuracion'
+      preLoaderRoute: typeof ConfiguracionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +132,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConfiguracionRoute: ConfiguracionRoute,
   ControlCalidadRoute: ControlCalidadRoute,
   LoginRoute: LoginRoute,
   ObservacionesRoute: ObservacionesRoute,
