@@ -295,6 +295,13 @@ function RouteComponent() {
     canvas.width = canvasWidth
     canvas.height = canvasHeight
 
+    console.log('Canvas dimensions:', {
+      internalWidth: canvas.width,
+      internalHeight: canvas.height,
+      displayWidth: canvas.getBoundingClientRect().width,
+      displayHeight: canvas.getBoundingClientRect().height
+    })
+
     const draw = () => {
       // Save context and apply transform
       ctx.save()
@@ -410,9 +417,18 @@ function RouteComponent() {
     if (!canvas) return
 
     const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    const camaId = getCamaAtPosition(x, y)
+
+    // Convert screen coordinates to canvas coordinates, accounting for display scaling
+    const screenX = e.clientX - rect.left
+    const screenY = e.clientY - rect.top
+    const displayScaleX = canvas.width / rect.width
+    const displayScaleY = canvas.height / rect.height
+
+    // Apply display scale, then reverse the pan/zoom transform
+    const canvasX = (screenX * displayScaleX - offset.x) / scale
+    const canvasY = (screenY * displayScaleY - offset.y) / scale
+
+    const camaId = getCamaAtPosition(canvasX, canvasY)
 
     if (camaId) {
       setDragStart(camaId)
@@ -428,13 +444,17 @@ function RouteComponent() {
 
     const rect = canvas.getBoundingClientRect()
 
-    // Account for canvas scaling
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
-    const x = (e.clientX - rect.left) * scaleX
-    const y = (e.clientY - rect.top) * scaleY
+    // Convert screen coordinates to canvas coordinates, accounting for display scaling
+    const screenX = e.clientX - rect.left
+    const screenY = e.clientY - rect.top
+    const displayScaleX = canvas.width / rect.width
+    const displayScaleY = canvas.height / rect.height
 
-    const camaId = getCamaAtPosition(x, y)
+    // Apply display scale, then reverse the pan/zoom transform
+    const canvasX = (screenX * displayScaleX - offset.x) / scale
+    const canvasY = (screenY * displayScaleY - offset.y) / scale
+
+    const camaId = getCamaAtPosition(canvasX, canvasY)
 
     if (camaId) {
       const startIndex = camas.findIndex(c => c.id_cama === dragStart)
@@ -516,13 +536,27 @@ function RouteComponent() {
       const rect = canvas.getBoundingClientRect()
       const touch = e.touches[0]
 
-      // Account for canvas scaling and transform
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
-      const x = ((touch.clientX - rect.left) * scaleX - offset.x) / scale
-      const y = ((touch.clientY - rect.top) * scaleY - offset.y) / scale
+      // Convert screen coordinates to canvas coordinates, accounting for display scaling
+      const screenX = touch.clientX - rect.left
+      const screenY = touch.clientY - rect.top
+      const displayScaleX = canvas.width / rect.width
+      const displayScaleY = canvas.height / rect.height
 
-      const camaId = getCamaAtPosition(x, y)
+      // Apply display scale, then reverse the pan/zoom transform
+      const canvasX = (screenX * displayScaleX - offset.x) / scale
+      const canvasY = (screenY * displayScaleY - offset.y) / scale
+
+      console.log('Touch START:', {
+        touch: { x: touch.clientX, y: touch.clientY },
+        screen: { x: screenX, y: screenY },
+        displayScale: { x: displayScaleX, y: displayScaleY },
+        offset, scale,
+        canvas: { x: canvasX, y: canvasY },
+        canvasDim: { w: canvas.width, h: canvas.height },
+        rect: { w: rect.width, h: rect.height }
+      })
+
+      const camaId = getCamaAtPosition(canvasX, canvasY)
 
       if (camaId) {
         setDragStart(camaId)
@@ -582,13 +616,17 @@ function RouteComponent() {
       const rect = canvas.getBoundingClientRect()
       const touch = e.touches[0]
 
-      // Account for canvas scaling and transform
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
-      const x = ((touch.clientX - rect.left) * scaleX - offset.x) / scale
-      const y = ((touch.clientY - rect.top) * scaleY - offset.y) / scale
+      // Convert screen coordinates to canvas coordinates, accounting for display scaling
+      const screenX = touch.clientX - rect.left
+      const screenY = touch.clientY - rect.top
+      const displayScaleX = canvas.width / rect.width
+      const displayScaleY = canvas.height / rect.height
 
-      const camaId = getCamaAtPosition(x, y)
+      // Apply display scale, then reverse the pan/zoom transform
+      const canvasX = (screenX * displayScaleX - offset.x) / scale
+      const canvasY = (screenY * displayScaleY - offset.y) / scale
+
+      const camaId = getCamaAtPosition(canvasX, canvasY)
 
       if (camaId) {
         const startIndex = camas.findIndex(c => c.id_cama === dragStart)
