@@ -265,7 +265,7 @@ function ControlCalidadComponent() {
 
       <Card className='bg-zinc-900 border-none text-white flex-1 min-h-0 flex flex-col'>
         <CardContent className='flex-1 min-h-0 flex flex-col gap-2 px-2'>
-          <div className='flex items-center justify-center gap-2 flex-shrink-0'>
+          <div className='flex items-center justify-between flex-shrink-0'>
             <Button
               onClick={goToPreviousDay}
               variant='outline'
@@ -275,14 +275,14 @@ function ControlCalidadComponent() {
               <ChevronLeft />
             </Button>
             <div className='flex items-center gap-2'>
-              <span className='text-lg font-medium min-w-[300px] text-center capitalize'>
+              <span className='text-lg font-medium text-center capitalize flex-shrink-0'>
                 {formatDisplayDate(selectedDate)}
               </span>
               <Button
                 onClick={handleOpenMap}
                 variant='outline'
                 size='icon'
-                className='bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700'
+                className='bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 flex-shrink-0'
               >
                 <Map />
               </Button>
