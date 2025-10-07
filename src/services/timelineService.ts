@@ -69,7 +69,6 @@ export async function getUserTimelines(date: string): Promise<UserTimeline[]> {
     .in('id_usuario', users.map(u => u.id_usuario))
     .gte('creado_en', startOfDay)
     .lte('creado_en', endOfDay)
-    .is('eliminado_en', null)
     .order('creado_en', { ascending: true })
 
   if (obsError) throw obsError

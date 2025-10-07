@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { ensureObservationType } from './observationTypeService'
 import type { Observation } from '../types'
 
 // Remove leading zeros from numeric strings
@@ -42,6 +43,12 @@ export async function syncObservationToSupabase(observation: Observation) {
 
   // Map estado name to database tipo_observacion
   const tipoObservacion = estadoToTipoObservacion[observation.estado.toLowerCase()] || observation.estado
+
+  const isValidObservationType = await ensureObservationType(tipoObservacion)
+
+  if (!isValidObservationType) {
+    throw new Error(`Tipo de observación "${tipoObservacion}" no es válido`) // degrade to Spanish message
+  }
 
   // Get finca by id_finca (NEVER INSERT)
   const { data: finca, error: fincaError } = await supabase

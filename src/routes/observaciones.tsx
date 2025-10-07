@@ -236,11 +236,16 @@ function RouteComponent() {
   return (
     <>
       <div className='overflow-y-auto flex flex-1 flex-col h-full p-2 rounded-lg gap-4'>
-        {Object.entries(groupedByDate).map(([fecha, rows]) => (
-          <div key={fecha} className='flex flex-col gap-1'>
-            <h2 className='text-white text-xl text-center capitalize'>{formatDisplayDate(fecha)}</h2>
-            <Card className='overflow-hidden max-h-full bg-zinc-900 p-1  text-white px-2 pb-2 text-white border-none'>
-              <Table >
+        {summaries.length === 0 ? (
+          <div className='flex items-center justify-center h-full'>
+            <p className='text-zinc-400 text-lg text-center'>No has ingresado ninguna observación</p>
+          </div>
+        ) : (
+          Object.entries(groupedByDate).map(([fecha, rows]) => (
+            <div key={fecha} className='flex flex-col gap-1'>
+              <h2 className='text-white text-xl text-center capitalize'>{formatDisplayDate(fecha)}</h2>
+              <Card className='overflow-hidden max-h-full bg-zinc-900 p-1  text-white px-2 pb-2 text-white border-none'>
+                <Table >
                 <TableHeader className='text-xs'>
                   <TableRow>
                     <TableHead className='text-white'>F</TableHead>
@@ -333,7 +338,8 @@ function RouteComponent() {
               </Table>
             </Card>
           </div>
-        ))}
+          ))
+        )}
       </div>
 
       <Dialog open={!!selectedSummary} onOpenChange={(open) => !open && setSelectedSummary(null)}>

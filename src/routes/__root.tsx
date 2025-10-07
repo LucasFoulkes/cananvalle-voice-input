@@ -67,18 +67,18 @@ function RootComponent() {
                       bg-indigo-500 text-white transition-colors w-full group-data-[active=true]:bg-indigo-400 flex flex-col gap-1 h-auto py-2'
                 aria-label={label}
               >
-                <Icon />
-                <span className='text-[10px]'>{label}</span>
+                <Icon className='w-12 h-12 p-0' />
+                <span className='text-[8px]'>{label}</span>
               </Button>
             </Link>
           ))}
           <Button
             onClick={() => setShowLogoutDialog(true)}
-            className='bg-indigo-500 text-white hover:bg-indigo-600 transition-colors w-full flex flex-col gap-1 h-auto py-2'
+            className='bg-indigo-500 text-white hover:bg-indigo-600 transition-colors w-full flex flex-col gap-1 h-auto py-2 capitalize'
             aria-label='Cerrar sesión'
           >
-            <LogOut />
-            <span className='text-[10px]'>{currentUser?.nombres || 'Salir'}</span>
+            <LogOut className='w-12 h-12' />
+            <span className='text-[8px]'>{currentUser?.nombres || 'Salir'}</span>
           </Button>
         </nav>
 
@@ -91,10 +91,10 @@ function RootComponent() {
               <p className='text-center text-sm'>
                 ¿Está seguro que desea cerrar sesión?
               </p>
-              <div className='grid grid-cols-2 gap-2'>
+              <div className='grid grid-cols-2 gap-2 capitalize'>
                 <Button
                   onClick={() => setShowLogoutDialog(false)}
-                  className='bg-zinc-700 hover:bg-zinc-600'
+                  className='bg-zinc-700 hover:bg-zinc-600 capitalize'
                 >
                   Cancelar
                 </Button>

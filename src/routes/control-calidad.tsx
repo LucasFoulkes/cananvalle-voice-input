@@ -1,14 +1,12 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { isControlCalidad } from '@/lib/auth'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { ShieldCheck, UserPlus, Loader2, ChevronDown, ChevronLeft, ChevronRight, Map } from 'lucide-react'
+import { Loader2, ChevronLeft, ChevronRight, Map } from 'lucide-react'
 import { createUsuario, getAllUsuarios, type CreateUsuarioInput } from '@/services/usuarioManagementService'
 import { getUserTimelines, type UserTimeline } from '@/services/timelineService'
 import { getGpsPointsForDate, type GpsPoint } from '@/services/gpsService'
@@ -33,11 +31,11 @@ function ControlCalidadComponent() {
   const navigate = useNavigate()
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [loadingUsers, setLoadingUsers] = useState(false)
+  const [, setLoadingUsers] = useState(false)
   const [loadingTimeline, setLoadingTimeline] = useState(false)
   const [error, setError] = useState('')
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
-  const [isUsersOpen, setIsUsersOpen] = useState(false)
+  const [isUsersOpen] = useState(false)
   const [timelines, setTimelines] = useState<UserTimeline[]>([])
   const [selectedDate, setSelectedDate] = useState(getLocalDateString())
   const [showMapDialog, setShowMapDialog] = useState(false)
@@ -188,81 +186,6 @@ function ControlCalidadComponent() {
 
   return (
     <div className='h-full flex flex-col p-2 gap-1'>
-      <Card className='bg-zinc-900 border-none text-white'>
-        <CardHeader>
-          <CardTitle className='flex items-center justify-between'>
-            <div className='flex items-center gap-2'>
-              <ShieldCheck className='text-green-400' />
-              Control de Calidad
-            </div>
-            <Button
-              onClick={() => setShowCreateDialog(true)}
-              className='bg-green-600 hover:bg-green-700'
-            >
-              <UserPlus className='mr-2' size={16} />
-              Crear Usuario
-            </Button>
-          </CardTitle>
-        </CardHeader>
-      </Card>
-
-      <Collapsible open={isUsersOpen} onOpenChange={setIsUsersOpen}>
-        <Card className='bg-zinc-900 border-none text-white'>
-          <CardHeader>
-            <CollapsibleTrigger asChild>
-              <Button
-                variant='ghost'
-                className='w-full justify-between p-0 hover:bg-transparent'
-              >
-                <CardTitle>Usuarios</CardTitle>
-                <ChevronDown className={`transition-transform ${isUsersOpen ? 'rotate-180' : ''}`} />
-              </Button>
-            </CollapsibleTrigger>
-          </CardHeader>
-          <CollapsibleContent>
-            <CardContent>
-              {loadingUsers ? (
-                <div className='flex justify-center py-8'>
-                  <Loader2 className='animate-spin text-zinc-400' size={32} />
-                </div>
-              ) : (
-                <div className='overflow-x-auto'>
-                  <Table>
-                    <TableHeader>
-                      <TableRow className='border-zinc-700'>
-                        <TableHead className='text-zinc-400'>Nombres</TableHead>
-                        <TableHead className='text-zinc-400'>Apellidos</TableHead>
-                        <TableHead className='text-zinc-400'>Cédula</TableHead>
-                        <TableHead className='text-zinc-400'>Rol</TableHead>
-                        <TableHead className='text-zinc-400'>PIN</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {usuarios.map((user) => (
-                        <TableRow key={user.id_usuario} className='border-zinc-700'>
-                          <TableCell>{user.nombres}</TableCell>
-                          <TableCell>{user.apellidos || '-'}</TableCell>
-                          <TableCell>{user.cedula || '-'}</TableCell>
-                          <TableCell>
-                            <span className={`px-2 py-1 rounded text-xs ${user.rol === 'sudo' ? 'bg-purple-600' :
-                              user.rol === 'control_de_calidad' ? 'bg-blue-600' :
-                                'bg-zinc-600'
-                              }`}>
-                              {user.rol}
-                            </span>
-                          </TableCell>
-                          <TableCell>{user.clave_pin}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </CollapsibleContent>
-        </Card>
-      </Collapsible>
-
       <Card className='bg-zinc-900 border-none text-white flex-1 min-h-0 flex flex-col'>
         <CardContent className='flex-1 min-h-0 flex flex-col gap-2 px-2'>
           <div className='flex items-center justify-between flex-shrink-0'>

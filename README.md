@@ -144,7 +144,12 @@ The app expects the following Supabase tables:
 - **observacion** - Field observations (id_observacion, id_cama, tipo_observacion, cantidad, id_punto_gps, creado_en)
 - **puntos_gps** - GPS points (id, latitud, longitud, precision, altitud, creado_en)
 - **estados_fenologicos** - Phenological states reference
-- **estado_fenologico_tipo** - Types of phenological observations
+- **observaciones_tipo** - Master list of valid observation codes (codigo)
+- **estado_fenologico_orden** - Ordering for phenological stages (codigo_observacion, orden)
+
+### Observation Type Restructure (Oct 2025)
+
+The legacy `estado_fenologico_tipo` table has been replaced by the new `observaciones_tipo` and `estado_fenologico_orden` tables. The app now fetches and caches this data via `observationTypeService`, surfaces it in the Control de Calidad dashboard, and validates every observation before syncing to ensure the referenced code exists in Supabase.
 
 ### Supporting Tables
 - **variedad** - Plant varieties with color info
