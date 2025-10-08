@@ -58,10 +58,8 @@ export async function getUserTimelines(date: string): Promise<UserTimeline[]> {
         nombre,
         grupo_cama!inner(
           bloque!inner(
-            nombre,
-            finca!inner(
-              id_finca
-            )
+            id_finca,
+            nombre
           )
         )
       )
@@ -94,14 +92,15 @@ export async function getUserTimelines(date: string): Promise<UserTimeline[]> {
 
       // Extract cama details
       const camaData = firstObs.cama
-      const finca = camaData.grupo_cama.bloque.finca.id_finca
-      const bloque = camaData.grupo_cama.bloque.nombre
-      const cama = camaData.nombre
+      const bloqueData = camaData.grupo_cama?.bloque
+      const finca = bloqueData?.id_finca != null ? String(bloqueData.id_finca) : ''
+      const bloque = bloqueData?.nombre ?? ''
+      const cama = camaData.nombre ?? ''
 
       return {
         id_cama,
-        finca: String(finca),
-        bloque: String(bloque),
+        finca,
+        bloque,
         cama: String(cama),
         first_observation: firstObs.creado_en,
         last_observation: lastObs.creado_en,
