@@ -3,8 +3,13 @@ import type { Observation } from '../types'
 
 // Map client estado names to database tipo_observacion names
 const estadoToTipoObservacion: Record<string, string> = {
+  // Estados fenológicos
   'color': 'rayando_color',
-  'abierto': 'sepalos_abiertos'
+  'abierto': 'sepalos_abiertos',
+  // Sensores (pass through as-is, but explicit for clarity)
+  'conductividad_suelo': 'conductividad_suelo',
+  'humedad': 'humedad',
+  'temperatura_suelo': 'temperatura_suelo'
 }
 
 export async function syncObservationToSupabase(observation: Observation) {

@@ -5,7 +5,7 @@ import { loadObservaciones } from '@/lib/observationStorage'
 import { formatDateGroupInRecordedTimezone } from '@/lib/gpsTimezone'
 import type { ObservationWithMeta, GroupedObservations } from '@/types'
 
-export const STAGE_LABELS = ["arroz", "arveja", "garbanzo", "color", "abierto"] as const
+export const STAGE_LABELS = ["arroz", "arveja", "garbanzo", "color", "abierto", "conductividad_suelo", "humedad", "temperatura_suelo"] as const
 
 export function useObservacionData() {
     const currentUserId = getCurrentUserId()
@@ -15,23 +15,25 @@ export function useObservacionData() {
         if (!Array.isArray(rawObservaciones[0])) return []
 
         return ((rawObservaciones as unknown) as any[][]).map((arr, globalIndex) => {
-            // Format: [userId, finca, bloque, cama, arroz, arveja, garbanzo, color, abierto, fecha, gps, syncStatus, observacionId]
-            // Find which stage has a value (indices 4-8, offset by 1 due to userId at index 0)
-            const stageIndex = arr.slice(4, 9).findIndex((v: any) => v && v !== '0')
+            // New format: [userId, fecha, gps, finca, bloque, cama, arroz, arveja, garbanzo, color, abierto, conductividad_suelo, humedad, temperatura_suelo, syncStatus, observacionId]
+            // Indices:     0       1      2    3      4       5     6      7       8         9      10       11                   12       13                 14          15
+
+            // Find which stage has a value (status fields are at indices 6-13)
+            const stageIndex = arr.slice(6, 14).findIndex((v: any) => v && v !== '0')
             const stageName = stageIndex >= 0 ? STAGE_LABELS[stageIndex] : ''
-            const cantidad = stageIndex >= 0 ? Number(arr[4 + stageIndex]) || 0 : 0
+            const cantidad = stageIndex >= 0 ? Number(arr[6 + stageIndex]) || 0 : 0
 
             return {
                 userId: arr[0] ? parseInt(arr[0]) : currentUserId,
-                finca: arr[1],
-                bloque: arr[2],
-                cama: arr[3],
+                finca: arr[3],
+                bloque: arr[4],
+                cama: arr[5],
                 estado: stageName,
                 cantidad: cantidad,
-                fecha: arr[9],  // Index 9 is the timestamp
-                gps: arr[10] ? JSON.parse(arr[10]) : undefined,  // Index 10 is the GPS
-                syncStatus: arr[11] || 'pending',  // Index 11 is syncStatus
-                observacionId: arr[12] ? parseInt(arr[12]) : undefined,  // Index 12 is observacionId
+                fecha: arr[1],  // Index 1 is the timestamp
+                gps: arr[2] ? JSON.parse(arr[2]) : undefined,  // Index 2 is the GPS
+                syncStatus: arr[14] || 'pending',  // Index 14 is syncStatus
+                observacionId: arr[15] ? parseInt(arr[15]) : undefined,  // Index 15 is observacionId
                 originalArr: arr,
                 globalIndex
             }

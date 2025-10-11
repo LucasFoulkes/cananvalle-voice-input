@@ -3,17 +3,27 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Eye } from 'lucide-react'
-import type { UserTimeline, CamaTimelineSegment } from '@/types'
+import type { UserTimeline, CamaTimelineSegment, GpsLocation } from '@/types'
+import { getTimezoneFromGPS } from '@/lib/gpsTimezone'
 
 type Props = {
   timelines: UserTimeline[]
 }
 
-// Parse timestamp as local time (not UTC)
-function parseLocalTime(timestamp: string): Date {
-  // If timestamp has timezone info (ends with Z or +/-), strip it and parse as local
-  const cleaned = timestamp.replace(/Z$|[+-]\d{2}:\d{2}$/, '')
-  return new Date(cleaned)
+// Parse timestamp in the timezone where it was recorded (using GPS)
+function parseTimeInRecordedTimezone(timestamp: string, gps?: GpsLocation | null): Date {
+  if (!gps) {
+    // Fallback: strip timezone and parse as local
+    const cleaned = timestamp.replace(/Z$|[+-]\d{2}:\d{2}$/, '')
+    return new Date(cleaned)
+  }
+
+  const timezone = getTimezoneFromGPS(gps)
+  const date = new Date(timestamp)
+
+  // Convert to the recorded timezone
+  const dateStr = date.toLocaleString('en-US', { timeZone: timezone })
+  return new Date(dateStr)
 }
 
 export function UserTimelineView({ timelines }: Props) {
@@ -33,8 +43,8 @@ export function UserTimelineView({ timelines }: Props) {
 
   timelines.forEach(timeline => {
     timeline.segments.forEach((segment: CamaTimelineSegment) => {
-      const firstTime = parseLocalTime(segment.first_observation).getTime()
-      const lastTime = parseLocalTime(segment.last_observation).getTime()
+      const firstTime = parseTimeInRecordedTimezone(segment.first_observation, segment.first_gps).getTime()
+      const lastTime = parseTimeInRecordedTimezone(segment.last_observation, segment.last_gps).getTime()
       if (firstTime < earliestTime) earliestTime = firstTime
       if (lastTime > latestTime) latestTime = lastTime
     })
@@ -46,14 +56,14 @@ export function UserTimelineView({ timelines }: Props) {
   const timeEnd = latestTime + padding
   const duration = timeEnd - timeStart
 
-  const getPosition = (timestamp: string) => {
-    const time = parseLocalTime(timestamp).getTime()
+  const getPosition = (timestamp: string, gps?: GpsLocation | null) => {
+    const time = parseTimeInRecordedTimezone(timestamp, gps).getTime()
     return ((time - timeStart) / duration) * 100
   }
 
-  const getWidth = (start: string, end: string) => {
-    const startPos = getPosition(start)
-    const endPos = getPosition(end)
+  const getWidth = (start: string, startGps: GpsLocation | null | undefined, end: string, endGps: GpsLocation | null | undefined) => {
+    const startPos = getPosition(start, startGps)
+    const endPos = getPosition(end, endGps)
     return Math.max(endPos - startPos, 0.5) // Minimum width for visibility
   }
 
@@ -82,7 +92,10 @@ export function UserTimelineView({ timelines }: Props) {
         <div className='space-y-6'>
           {timelines.map(timeline => {
             // Calculate overall stats
-            const allTimes = timeline.segments.map((s: CamaTimelineSegment) => parseLocalTime(s.last_observation).getTime() - parseLocalTime(s.first_observation).getTime())
+            const allTimes = timeline.segments.map((s: CamaTimelineSegment) =>
+              parseTimeInRecordedTimezone(s.last_observation, s.last_gps).getTime() -
+              parseTimeInRecordedTimezone(s.first_observation, s.first_gps).getTime()
+            )
             allTimes.sort((a: number, b: number) => a - b)
             const medianTime = allTimes.length > 0 ? allTimes[Math.floor(allTimes.length / 2)] / (1000 * 60) : 0
 
@@ -90,17 +103,22 @@ export function UserTimelineView({ timelines }: Props) {
             allObsCounts.sort((a: number, b: number) => a - b)
             const medianObs = allObsCounts.length > 0 ? allObsCounts[Math.floor(allObsCounts.length / 2)] : 0
 
+            const tipoLabel = timeline.tipo === 'estados' ? 'Estados' : timeline.tipo === 'sensores' ? 'Sensores' : ''
+
             return (
-              <div key={timeline.id_usuario} className='space-y-2'>
-                <div className='text-sm font-medium text-white'>
-                  {timeline.nombres} {timeline.apellidos || ''}
+              <div key={`${timeline.id_usuario}-${timeline.tipo}`} className='space-y-2'>
+                <div className='text-sm font-medium text-white flex items-center gap-2'>
+                  <span>{timeline.nombres} {timeline.apellidos || ''}</span>
+                  {timeline.tipo && (
+                    <span className='text-xs text-zinc-400 font-normal'>· {tipoLabel}</span>
+                  )}
                 </div>
 
                 {/* Bar */}
                 <div className='relative h-6 bg-zinc-900 rounded overflow-hidden'>
                   {timeline.segments.map((segment: CamaTimelineSegment, idx: number) => {
-                    const left = getPosition(segment.first_observation)
-                    const width = getWidth(segment.first_observation, segment.last_observation)
+                    const left = getPosition(segment.first_observation, segment.first_gps)
+                    const width = getWidth(segment.first_observation, segment.first_gps, segment.last_observation, segment.last_gps)
 
                     return (
                       <div
@@ -180,11 +198,11 @@ export function UserTimelineView({ timelines }: Props) {
                   return Object.entries(groupedByFinca).map(([finca, bloques]) => {
                     // Calculate finca-level stats
                     const allFincaSegments = Object.values(bloques).flat()
-                    const fincaFirstTime = new Date(Math.min(...allFincaSegments.map((s: CamaTimelineSegment) => parseLocalTime(s.first_observation).getTime())))
-                    const fincaLastTime = new Date(Math.max(...allFincaSegments.map((s: CamaTimelineSegment) => parseLocalTime(s.last_observation).getTime())))
+                    const fincaFirstTime = new Date(Math.min(...allFincaSegments.map((s: CamaTimelineSegment) => parseTimeInRecordedTimezone(s.first_observation, s.first_gps).getTime())))
+                    const fincaLastTime = new Date(Math.max(...allFincaSegments.map((s: CamaTimelineSegment) => parseTimeInRecordedTimezone(s.last_observation, s.last_gps).getTime())))
                     const bloqueCount = Object.keys(bloques).length
                     const fincaTotalTime = allFincaSegments.reduce((sum: number, s: CamaTimelineSegment) => {
-                      return sum + (parseLocalTime(s.last_observation).getTime() - parseLocalTime(s.first_observation).getTime())
+                      return sum + (parseTimeInRecordedTimezone(s.last_observation, s.last_gps).getTime() - parseTimeInRecordedTimezone(s.first_observation, s.first_gps).getTime())
                     }, 0)
                     const fincaAvgTimePerBloque = Math.round(fincaTotalTime / bloqueCount / (1000 * 60))
                     const fincaTotalObs = allFincaSegments.reduce((sum: number, s: CamaTimelineSegment) => sum + s.observation_count, 0)
@@ -203,10 +221,10 @@ export function UserTimelineView({ timelines }: Props) {
                         </div>
                         {Object.entries(bloques).map(([bloque, segments]: [string, CamaTimelineSegment[]]) => {
                           // Calculate bloque-level stats
-                          const bloqueFirstTime = new Date(Math.min(...segments.map((s: CamaTimelineSegment) => parseLocalTime(s.first_observation).getTime())))
-                          const bloqueLastTime = new Date(Math.max(...segments.map((s: CamaTimelineSegment) => parseLocalTime(s.last_observation).getTime())))
+                          const bloqueFirstTime = new Date(Math.min(...segments.map((s: CamaTimelineSegment) => parseTimeInRecordedTimezone(s.first_observation, s.first_gps).getTime())))
+                          const bloqueLastTime = new Date(Math.max(...segments.map((s: CamaTimelineSegment) => parseTimeInRecordedTimezone(s.last_observation, s.last_gps).getTime())))
                           const bloqueTotalTime = segments.reduce((sum: number, s: CamaTimelineSegment) => {
-                            return sum + (parseLocalTime(s.last_observation).getTime() - parseLocalTime(s.first_observation).getTime())
+                            return sum + (parseTimeInRecordedTimezone(s.last_observation, s.last_gps).getTime() - parseTimeInRecordedTimezone(s.first_observation, s.first_gps).getTime())
                           }, 0)
                           const bloqueTotalTimeMin = Math.round(bloqueTotalTime / (1000 * 60))
                           const bloqueAvgTimePerCama = Math.round(bloqueTotalTime / segments.length / (1000 * 60))
@@ -226,8 +244,8 @@ export function UserTimelineView({ timelines }: Props) {
                               </div>
                               <div className='grid grid-cols-1 gap-2'>
                                 {segments.map((segment: CamaTimelineSegment, idx: number) => {
-                                  const firstTime = parseLocalTime(segment.first_observation)
-                                  const lastTime = parseLocalTime(segment.last_observation)
+                                  const firstTime = parseTimeInRecordedTimezone(segment.first_observation, segment.first_gps)
+                                  const lastTime = parseTimeInRecordedTimezone(segment.last_observation, segment.last_gps)
                                   const timeDiff = Math.round((lastTime.getTime() - firstTime.getTime()) / (1000 * 60))
 
                                   const firstTimeStr = `${firstTime.getHours()}:${String(firstTime.getMinutes()).padStart(2, '0')}`

@@ -49,28 +49,40 @@ export function useObservations(userId: string): UseObservationsReturn {
 
     /**
      * Calculate sum of a specific field for observations matching location and date
-     * Note: obsIndex is from the UI perspective (0-7), but in storage userId is at index 0,
-     * so we need to account for the offset when filtering by location
+     * For estados: returns sum of all values
+     * For sensores: returns most recent value only
+     * Array structure: [userId, fecha, gps, finca, bloque, cama, arroz, arveja, garbanzo, color, abierto, ...]
+     * Note: obsIndex is from the UI perspective (0-10), but in storage we have metadata at start
      */
-    const getSum = (obsIndex: number, location: [string, string, string], date: string): number => {
+    const getSum = (obsIndex: number, location: [string, string, string], date: string, mode?: 'estados' | 'sensores'): number => {
         const filtered = observaciones.filter(row => {
-            // Filter by location
+            // Filter by location (now at indices 3-5)
             const matchesLocation =
-                row[1] === location[0] &&  // finca is now at index 1 (was 0)
-                row[2] === location[1] &&  // bloque is now at index 2 (was 1)
-                row[3] === location[2];    // cama is now at index 3 (was 2)
+                row[3] === location[0] &&  // finca at index 3
+                row[4] === location[1] &&  // bloque at index 4
+                row[5] === location[2];    // cama at index 5
 
             if (!matchesLocation) return false;
 
             // Filter by date using GPS timezone
-            const gps = row[10] ? JSON.parse(row[10]) : undefined;
-            const obsDate = formatDateGroupInRecordedTimezone(row[9], gps);
+            const gps = row[2] ? JSON.parse(row[2]) : undefined;  // gps at index 2
+            const obsDate = formatDateGroupInRecordedTimezone(row[1], gps);  // fecha at index 1
             return obsDate === date;
         });
 
+        // Calculate storage index
+        const storageIndex = obsIndex < OBSERVATION_CONFIG.location.length
+            ? obsIndex + 3  // Location: add 3 for userId, fecha, gps
+            : obsIndex + 3; // Status: same offset (0-based to storage)
+
+        // For sensores mode, return most recent value instead of sum
+        if (mode === 'sensores' && filtered.length > 0) {
+            const lastObservation = filtered[filtered.length - 1];
+            return parseInt(lastObservation[storageIndex]) || 0;
+        }
+
+        // For estados mode (or default), sum all values
         const sum = filtered.reduce((acc, row) => {
-            // obsIndex from UI needs +1 offset for storage (because userId is at index 0)
-            const storageIndex = obsIndex < OBSERVATION_CONFIG.location.length ? obsIndex + 1 : obsIndex + 1;
             const val = parseInt(row[storageIndex]) || 0;
             return acc + val;
         }, 0);
@@ -106,19 +118,21 @@ export function useObservations(userId: string): UseObservationsReturn {
                 captureCurrentLocation()
                     .then(gpsCoords => {
                         // Build the observation record to save
-                        // Start with userId, then location fields, then empty status fields
+                        // New structure: [userId, fecha, gps, finca, bloque, cama, arroz, arveja, garbanzo, color, abierto, conductividad_suelo, humedad, temperatura_suelo]
+                        const timestamp = new Date().toISOString()
+                        const gpsJson = gpsCoords ? JSON.stringify(gpsCoords) : ''
+
                         const toSave = [
-                            userId, // userId at index 0
-                            ...updatedObservacion.slice(0, OBSERVATION_CONFIG.location.length),
-                            '', '', '', '', ''
+                            userId,     // index 0
+                            timestamp,  // index 1
+                            gpsJson,    // index 2
+                            ...updatedObservacion.slice(0, OBSERVATION_CONFIG.location.length),  // indices 3-5: finca, bloque, cama
+                            '', '', '', '', '', '', '', ''  // indices 6-13: empty placeholders for 8 status fields
                         ]
 
-                        // Set the specific status field that was entered (offset by 1 due to userId at index 0)
-                        toSave[i + 1] = val
-
-                        // Add metadata: timestamp, GPS (store as JSON string for localStorage)
-                        toSave.push(new Date().toISOString())
-                        toSave.push(gpsCoords ? JSON.stringify(gpsCoords) : '')
+                        // Set the specific status field that was entered
+                        // Status fields start at index 6 in storage, UI index starts at 3 (after location)
+                        toSave[i + 3] = val  // +3 offset for userId, fecha, gps
 
                         console.log('Saving observation:', toSave)
 

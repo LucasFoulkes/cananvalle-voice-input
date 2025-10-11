@@ -15,22 +15,69 @@ export const Route = createFileRoute('/observaciones')({
 // Utilities
 const parseLocation = (key: string) => {
   const parts = key.split('-')
-  return {
-    finca: parts[parts.length - 3],
-    bloque: parts[parts.length - 2],
-    cama: parts[parts.length - 1],
-    tuple: [parts[parts.length - 3], parts[parts.length - 2], parts[parts.length - 1]] as [string, string, string]
+  // Format: date-finca-bloque-cama-tipo or date-finca-bloque-cama (legacy)
+  const hasTipo = parts.length === 5
+
+  if (hasTipo) {
+    // Format: date-finca-bloque-cama-tipo
+    return {
+      finca: parts[1],
+      bloque: parts[2],
+      cama: parts[3],
+      tipo: parts[4],
+      tuple: [parts[1], parts[2], parts[3]] as [string, string, string]
+    }
+  } else {
+    // Format: date-finca-bloque-cama (legacy)
+    return {
+      finca: parts[1],
+      bloque: parts[2],
+      cama: parts[3],
+      tipo: undefined,
+      tuple: [parts[1], parts[2], parts[3]] as [string, string, string]
+    }
   }
 }
 
-const getActiveStage = (obs: any, stageLabels: string[]) => {
-  // Status fields are now at indices 4-8 (offset by 1 due to userId at index 0)
-  const stageIndex = obs.originalArr?.slice(4, 9).findIndex((v: any) => v && v !== '0')
-  return stageIndex >= 0 ? {
-    name: stageLabels[stageIndex],
-    value: obs.originalArr[4 + stageIndex],
-    index: stageIndex
-  } : { name: '-', value: '-', index: -1 }
+// Determine if observation is estado or sensor based on which fields have values
+const getObservationType = (obs: any): 'estado' | 'sensor' => {
+  // New array format: [userId, fecha, gps, finca, bloque, cama, arroz, arveja, garbanzo, color, abierto, conductividad_suelo, humedad, temperatura_suelo, ...]
+  // Estado fields: indices 6-10 (arroz, arveja, garbanzo, color, abierto)
+  // Sensor fields: indices 11-13 (conductividad_suelo, humedad, temperatura_suelo)
+  const arr = obs.originalArr
+  if (!arr) return 'estado'
+
+  const hasSensor = arr.slice(11, 14).some((v: any) => v && v !== '0')
+
+  return hasSensor ? 'sensor' : 'estado'
+}
+
+// Get estado/sensor labels based on type
+const ESTADO_LABELS = ["arroz", "arveja", "garbanzo", "color", "abierto"]
+const SENSOR_LABELS = ["conductividad", "humedad", "temperatura"]
+
+const getActiveStage = (obs: any, tipo: 'estado' | 'sensor') => {
+  // New array format: [userId, fecha, gps, finca, bloque, cama, arroz, arveja, garbanzo, color, abierto, conductividad_suelo, humedad, temperatura_suelo, ...]
+  const arr = obs.originalArr
+  if (!arr) return { name: '-', value: '-', index: -1 }
+
+  if (tipo === 'estado') {
+    // Estado fields are at indices 6-10
+    const stageIndex = arr.slice(6, 11).findIndex((v: any) => v && v !== '0')
+    return stageIndex >= 0 ? {
+      name: ESTADO_LABELS[stageIndex],
+      value: arr[6 + stageIndex],
+      index: stageIndex
+    } : { name: '-', value: '-', index: -1 }
+  } else {
+    // Sensor fields are at indices 11-13
+    const stageIndex = arr.slice(11, 14).findIndex((v: any) => v && v !== '0')
+    return stageIndex >= 0 ? {
+      name: SENSOR_LABELS[stageIndex],
+      value: arr[11 + stageIndex],
+      index: stageIndex
+    } : { name: '-', value: '-', index: -1 }
+  }
 }
 
 
@@ -48,18 +95,26 @@ const SyncStatus = ({ status, isUploading, isSynced, hasError, size = 14, onSync
 }
 
 // Location Card Component
-const LocationCard = ({ locationKey, obsArr, date, stageLabels, getSum, syncProps, onDelete }: any) => {
-  const { finca, bloque, cama, tuple } = parseLocation(locationKey)
+const LocationCard = ({ locationKey, obsArr, date, getSum, syncProps, onDelete }: any) => {
+  const { finca, bloque, cama, tipo, tuple } = parseLocation(locationKey)
   const { uploading, synced, errors, areAllSynced, handleSync } = syncProps
+
+  // Determine the actual type from observations if not in key
+  const observationType = tipo || getObservationType(obsArr[0])
+  const isEstado = observationType === 'estado'
+  const stageLabels = isEstado ? ESTADO_LABELS : SENSOR_LABELS
+  const startIndex = isEstado ? 3 : 8 // Estado starts at index 3 (arroz), Sensor starts at index 8 (conductividad_suelo)
+  const bgColor = isEstado ? 'bg-zinc-800' : 'bg-slate-800'
+  const hoverColor = isEstado ? 'hover:bg-zinc-700' : 'hover:bg-slate-700'
 
   return (
     <Dialog>
       <h3 className="text-sm text-center flex justify-center items-center gap-1">
         F {finca} <Dot /> B {bloque} <Dot /> C {cama}
       </h3>
-      <div className="bg-zinc-800 rounded-xl p-1">
+      <div className={`${bgColor} rounded-xl p-1`}>
         <DialogTrigger asChild>
-          <div className="cursor-pointer hover:bg-zinc-700 rounded-lg p-2">
+          <div className={`cursor-pointer ${hoverColor} rounded-lg p-2`}>
             <div className="flex items-center gap-1 mb-1 text-xs text-white text-center">
               {stageLabels.map((label: string) => (
                 <div key={label} className="flex-1 capitalize">{label}</div>
@@ -69,7 +124,7 @@ const LocationCard = ({ locationKey, obsArr, date, stageLabels, getSum, syncProp
             </div>
             <div className="flex items-center gap-1 font-semibold text-white text-xs text-center">
               {stageLabels.map((_: string, idx: number) => (
-                <div key={idx} className="flex-1">{getSum(3 + idx, tuple, date) || '-'}</div>
+                <div key={idx} className="flex-1">{getSum(startIndex + idx, tuple, date) || '-'}</div>
               ))}
               <div className="w-10">
                 <SyncStatus
@@ -93,36 +148,45 @@ const LocationCard = ({ locationKey, obsArr, date, stageLabels, getSum, syncProp
           </div>
         </DialogTrigger>
       </div>
-      <ObservationDialog finca={finca} bloque={bloque} cama={cama} obsArr={obsArr} stageLabels={stageLabels} syncProps={syncProps} onDelete={onDelete} />
+      <ObservationDialog
+        finca={finca}
+        bloque={bloque}
+        cama={cama}
+        obsArr={obsArr}
+        tipo={observationType}
+        syncProps={syncProps}
+        onDelete={onDelete}
+      />
     </Dialog>
   )
 }
 
 // Observation Dialog Component
-const ObservationDialog = ({ finca, bloque, cama, obsArr, stageLabels, syncProps, onDelete }: any) => {
+const ObservationDialog = ({ finca, bloque, cama, obsArr, tipo, syncProps, onDelete }: any) => {
   const { handleSyncOne } = syncProps
 
   return (
     <DialogContent className="max-w-[calc(100vw-1rem)] w-full sm:max-w-2xl max-h-[calc(100vh-2rem)] overflow-hidden bg-zinc-900 text-white border-zinc-800">
       <DialogHeader>
-        <DialogTitle>Cama {cama} • Bloque {bloque} • Finca {finca}</DialogTitle>
+        <DialogTitle>
+          Cama {cama} • Bloque {bloque} • Finca {finca}
+        </DialogTitle>
       </DialogHeader>
       <div className="max-h-[calc(100vh-12rem)] overflow-y-auto">
         <Table>
           <TableHeader>
             <TableRow className="border-zinc-700">
-              {['Hora', 'Estado', 'Cantidad', 'Sync', 'Eliminar'].map(h => (
+              {['Hora', 'Cantidad', 'Sync', 'Eliminar'].map(h => (
                 <TableHead key={h} className={`text-white text-xs ${h === 'Cantidad' || h === 'Sync' || h === 'Eliminar' ? 'text-center' : ''}`}>{h}</TableHead>
               ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {obsArr.map((obs: any, i: number) => {
-              const stage = getActiveStage(obs, stageLabels)
+              const stage = getActiveStage(obs, tipo)
               return (
                 <TableRow key={i} className="border-zinc-700">
-                  <TableCell className="text-xs">{formatTimeInRecordedTimezone(obs.originalArr?.[9], obs.gps)}</TableCell>
-                  <TableCell className="text-xs capitalize">{stage.name}</TableCell>
+                  <TableCell className="text-xs">{formatTimeInRecordedTimezone(obs.originalArr?.[1], obs.gps)}</TableCell>
                   <TableCell className="text-xs text-center">{stage.value}</TableCell>
                   <TableCell className="text-center">
                     <SyncStatus status={obs.syncStatus} size={18} onSync={() => handleSyncOne(obs)} />
@@ -147,7 +211,7 @@ const ObservationDialog = ({ finca, bloque, cama, obsArr, stageLabels, syncProps
 // Main Component
 function Observaciones() {
   const { getSum } = useObservations('summary')
-  const { grouped, stageLabels } = useObservacionData()
+  const { grouped } = useObservacionData()
   const syncProps = useObservacionSync()
 
   const handleDelete = (observations: any[]) => {
@@ -173,8 +237,35 @@ function Observaciones() {
     return `${dayName} ${dateStr}`
   }
 
+  // Re-group observations by location AND type
+  const regroupByType = (dateGroups: any) => {
+    const result: any = {}
+
+    Object.entries(dateGroups).forEach(([date, locationGroups]: any) => {
+      result[date] = {}
+
+      Object.entries(locationGroups).forEach(([locationKey, obsArr]: any) => {
+        // Split observations by type
+        const estadoObs = obsArr.filter((obs: any) => getObservationType(obs) === 'estado')
+        const sensorObs = obsArr.filter((obs: any) => getObservationType(obs) === 'sensor')
+
+        // Add separate entries for estados and sensores
+        if (estadoObs.length > 0) {
+          result[date][`${locationKey}-estado`] = estadoObs
+        }
+        if (sensorObs.length > 0) {
+          result[date][`${locationKey}-sensor`] = sensorObs
+        }
+      })
+    })
+
+    return result
+  }
+
+  const groupedByType = regroupByType(grouped)
+
   // Check if there are no observations
-  const hasObservations = Object.keys(grouped).length > 0
+  const hasObservations = Object.keys(groupedByType).length > 0
 
   return (
     <div className="flex flex-col w-full h-full p-1 gap-1">
@@ -183,16 +274,15 @@ function Observaciones() {
           <p className="text-center text-zinc-400 text-lg">No hay observaciones</p>
         </div>
       ) : (
-        Object.entries(grouped).map(([date, locationGroups]) => (
+        Object.entries(groupedByType).map(([date, locationGroups]: [string, any]) => (
           <div key={date} className="gap-1 flex flex-col">
             <h2 className="text-xl text-center capitalize">{formatDisplayDate(date)}</h2>
-            {Object.entries(locationGroups).map(([locationKey, obsArr]) => (
+            {Object.entries(locationGroups).map(([locationKey, obsArr]: [string, any]) => (
               <LocationCard
                 key={locationKey}
                 locationKey={locationKey}
                 obsArr={obsArr}
                 date={date}
-                stageLabels={stageLabels}
                 getSum={getSum}
                 syncProps={syncProps}
                 onDelete={handleDelete}

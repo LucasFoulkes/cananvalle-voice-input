@@ -32,8 +32,8 @@ export function useObservacionSync() {
 
                 // Update localStorage with success status
                 if (obs.globalIndex !== undefined) {
-                    raw[obs.globalIndex][11] = 'success'  // syncStatus at index 11
-                    raw[obs.globalIndex][12] = String(observacionId)  // observacionId at index 12
+                    raw[obs.globalIndex][14] = 'success'  // syncStatus at index 14
+                    raw[obs.globalIndex][15] = String(observacionId)  // observacionId at index 15
                 }
             }
 
@@ -61,8 +61,8 @@ export function useObservacionSync() {
 
             // Update localStorage with success status
             if (obs.globalIndex !== undefined) {
-                raw[obs.globalIndex][11] = 'success'
-                raw[obs.globalIndex][12] = String(observacionId)
+                raw[obs.globalIndex][14] = 'success'
+                raw[obs.globalIndex][15] = String(observacionId)
                 saveObservacionesArray(raw)
             }
 

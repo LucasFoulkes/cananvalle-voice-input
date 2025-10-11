@@ -3,7 +3,7 @@
 // ============================================
 export const OBSERVATION_CONFIG = {
     location: ['finca', 'bloque', 'cama'] as const,
-    status: ['arroz', 'arveja', 'garbanzo', 'color', 'abierto'] as const,
+    status: ['arroz', 'arveja', 'garbanzo', 'color', 'abierto', 'conductividad_suelo', 'humedad', 'temperatura_suelo'] as const,
 } as const
 
 export const ALL_OBSERVATION_FIELDS = [
@@ -97,6 +97,7 @@ export type ObservationCommand = {
 export type ProcessCommandOptions = {
     items: string[]
     onSave: (index: number, value: string) => void
+    mode?: 'estados' | 'sensores'
 }
 
 // -------- Timeline Types --------
@@ -109,12 +110,15 @@ export type CamaTimelineSegment = {
     last_observation: string
     observation_count: number
     color: string
+    first_gps?: GpsLocation | null
+    last_gps?: GpsLocation | null
 }
 
 export type UserTimeline = {
     id_usuario: number
     nombres: string
     apellidos: string | null
+    tipo?: 'estados' | 'sensores'
     segments: CamaTimelineSegment[]
 }
 
@@ -129,7 +133,7 @@ export interface UseObservationsReturn {
     locationFieldCount: number
     // Actions
     save: (index: number, value: string) => Promise<void>
-    getSum: (obsIndex: number, location: [string, string, string], date: string) => number
+    getSum: (obsIndex: number, location: [string, string, string], date: string, mode?: 'estados' | 'sensores') => number
 }
 
 export type UseVoskOptions = {
