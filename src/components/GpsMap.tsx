@@ -64,14 +64,13 @@ export function GpsMap({ points, userColors, users }: Props) {
       const color = point.usuario_id ? userColors[point.usuario_id] || '#3388ff' : '#3388ff'
 
       // Calculate opacity based on precision (larger precision = more transparent)
-      // Solid at 1m precision, very transparent at higher precision (48x steeper slope)
+      // Solid at 1-2m precision, very transparent beyond 2m
       const minPrecision = 1
-      const maxPrecision = 2000
+      const maxPrecision = 2  // Changed to 2m - anything beyond this becomes very transparent
       const normalizedPrecision = Math.min(Math.max(point.precision, minPrecision), maxPrecision)
       const transparency = (normalizedPrecision - minPrecision) / (maxPrecision - minPrecision)
-      // Much steeper curve: raise transparency to power of 0.02125 (48th root) to make it 48x steeper
-      const steeperTransparency = Math.pow(transparency, 0.02125)
-      const opacity = Math.max(1 - steeperTransparency, 0.02) // Solid at 1m, very transparent at 2000m
+      // Linear fade from 1m (opacity 1.0) to 2m (opacity 0.01), anything beyond 2m stays at 0.01
+      const opacity = Math.max(1 - transparency * 0.99, 0.01) // Solid at 1m, 0.01 opacity at 2m+
 
       // Use L.circle to display radius in meters (not pixels) - no border
       const marker = L.circle([point.latitud, point.longitud], {
