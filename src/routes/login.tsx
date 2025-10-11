@@ -1,11 +1,18 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { validatePin, getUsuarios } from '@/services/usuarioService'
+import { isAuthenticated } from '@/lib/auth'
 
 export const Route = createFileRoute('/login')({
+  beforeLoad: () => {
+    // If already authenticated, redirect to home
+    if (isAuthenticated()) {
+      throw redirect({ to: '/' })
+    }
+  },
   component: LoginComponent,
 })
 

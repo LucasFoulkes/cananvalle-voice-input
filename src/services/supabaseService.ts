@@ -1,12 +1,5 @@
 import { supabase } from '../lib/supabase'
-import { ensureObservationType } from './observationTypeService'
 import type { Observation } from '../types'
-
-// Remove leading zeros from numeric strings
-const cleanNumericString = (value: string): string => {
-  const num = parseInt(value, 10)
-  return isNaN(num) ? value : num.toString()
-}
 
 // Map client estado names to database tipo_observacion names
 const estadoToTipoObservacion: Record<string, string> = {
@@ -15,89 +8,93 @@ const estadoToTipoObservacion: Record<string, string> = {
 }
 
 export async function syncObservationToSupabase(observation: Observation) {
+  console.log('=== Syncing observation ===')
+  console.log('observation:', observation)
+  console.log('observation.fecha:', observation.fecha)
+  console.log('observation.gps:', observation.gps)
+  console.log('typeof observation.gps:', typeof observation.gps)
+
+  // STEP 1: Insert GPS punto (if exists and has valid data)
   let gpsId: string | null = null
-
-  // Upload GPS point if available
   if (observation.gps) {
-    const { data: gpsData, error: gpsError } = await supabase
-      .from('puntos_gps')
-      .insert({
-        latitud: observation.gps.latitud,
-        longitud: observation.gps.longitud,
-        precision: observation.gps.precision,
-        altitud: observation.gps.altitud,
-        creado_en: observation.gps.creado_en,
-        usuario_id: observation.gps.usuario_id
-      })
-      .select('id')
-      .single()
+    // Parse GPS if it's a string (shouldn't happen, but just in case)
+    let gpsData: any = observation.gps
+    if (typeof gpsData === 'string') {
+      console.log('GPS is a string, parsing...')
+      try {
+        gpsData = JSON.parse(gpsData)
+        console.log('Parsed GPS:', gpsData)
+      } catch (e) {
+        console.error('Failed to parse GPS data:', gpsData)
+        gpsData = null
+      }
+    }
 
-    if (gpsError) throw gpsError
-    gpsId = gpsData.id
+    if (gpsData) {
+      // Transform GPS from local storage format to Supabase format
+      // Local format: { latitude, longitude, accuracy, altitude, timestamp }
+      // Supabase format: { latitud, longitud, precision, altitud, creado_en, usuario_id }
+      const latitud = gpsData.latitud ?? gpsData.latitude
+      const longitud = gpsData.longitud ?? gpsData.longitude
+
+      console.log('GPS coordinates:', { latitud, longitud })
+      console.log('creado_en will be:', observation.fecha)
+
+      if (latitud != null && longitud != null) {
+        const gpsInsertData = {
+          latitud: latitud,
+          longitud: longitud,
+          precision: gpsData.precision ?? gpsData.accuracy,
+          altitud: gpsData.altitud ?? gpsData.altitude,
+          creado_en: observation.fecha,  // Use observation's fecha, not GPS timestamp
+          usuario_id: observation.userId ? String(observation.userId) : null
+        }
+
+        console.log('Inserting GPS with data:', gpsInsertData)
+
+        const { data: gpsInsert, error: gpsError } = await supabase
+          .from('puntos_gps')
+          .insert(gpsInsertData)
+          .select('id')
+          .single()
+
+        if (gpsError) {
+          console.error('GPS insert error:', gpsError)
+          throw gpsError
+        }
+        gpsId = gpsInsert.id
+        console.log('GPS inserted with id:', gpsId)
+      }
+    }
   }
 
-  // Clean values (remove leading zeros)
-  const fincaId = parseInt(cleanNumericString(observation.finca), 10)
-  const bloqueNombre = cleanNumericString(observation.bloque)
-  const camaNombre = cleanNumericString(observation.cama)
-
-  // Map estado name to database tipo_observacion
+  // STEP 2: Map estado to tipo_observacion
   const tipoObservacion = estadoToTipoObservacion[observation.estado.toLowerCase()] || observation.estado
 
-  const isValidObservationType = await ensureObservationType(tipoObservacion)
-
-  if (!isValidObservationType) {
-    throw new Error(`Tipo de observación "${tipoObservacion}" no es válido`) // degrade to Spanish message
+  if (!tipoObservacion || tipoObservacion.trim() === '') {
+    throw new Error(`Tipo de observación inválido: "${observation.estado}"`)
   }
 
-  // Get finca by id_finca (NEVER INSERT)
-  const { data: finca, error: fincaError } = await supabase
-    .from('finca')
-    .select('id_finca:id_finca')
-    .eq('id_finca', fincaId)
-    .single()
-
-  if (fincaError || !finca) {
-    throw new Error(`Finca ${fincaId} no encontrada`)
-  }
-
-  // Get bloque by nombre (NEVER INSERT)
-  const { data: bloque, error: bloqueError } = await supabase
-    .from('bloque')
-    .select('id_bloque:id_bloque')
-    .eq('nombre', bloqueNombre)
-    .eq('id_finca', finca.id_finca)
-    .single()
-
-  if (bloqueError || !bloque) {
-    throw new Error(`Bloque "${bloqueNombre}" no encontrado en finca ${fincaId}`)
-  }
-
-  // Find cama by nombre and through grupo_cama -> bloque relationship (NEVER INSERT)
-  const { data: camas, error: camaError } = await supabase
+  // STEP 3: Get id_cama with ONE query (validates finca → bloque → grupo_cama → cama)
+  const { data: camaData, error: camaError } = await supabase
     .from('cama')
-    .select('id_cama:id_cama, grupo_cama!inner(id_bloque)')
-    .eq('nombre', camaNombre)
-    .eq('grupo_cama.id_bloque', bloque.id_bloque)
+    .select('id_cama, grupo_cama!inner(id_bloque, bloque!inner(id_finca))')
+    .eq('nombre', observation.cama)
+    .eq('grupo_cama.bloque.id_finca', parseInt(observation.finca))
+    .eq('grupo_cama.bloque.nombre', observation.bloque)
     .limit(1)
+    .single()
 
-  if (camaError) throw camaError
-
-  if (!camas || camas.length === 0) {
-    throw new Error(`Cama "${camaNombre}" no encontrada en bloque "${bloqueNombre}"`)
+  if (camaError || !camaData) {
+    throw new Error(`Cama "${observation.cama}" no encontrada en finca ${observation.finca}, bloque ${observation.bloque}`)
   }
 
-  const cama = camas[0]
-
-  // Get usuario_id from GPS or observation
-  const usuarioId = observation.gps?.usuario_id ? parseInt(observation.gps.usuario_id) : null
-
-  // Insert observation
+  // STEP 4: Insert observacion
   const { data: obsData, error: obsError } = await supabase
     .from('observacion')
     .insert({
-      id_cama: cama.id_cama,
-      id_usuario: usuarioId,
+      id_cama: camaData.id_cama,
+      id_usuario: observation.userId || null,
       tipo_observacion: tipoObservacion,
       cantidad: observation.cantidad,
       id_punto_gps: gpsId,
@@ -107,19 +104,5 @@ export async function syncObservationToSupabase(observation: Observation) {
     .single()
 
   if (obsError) throw obsError
-  if (!obsData) throw new Error('No se recibió ID de observación')
-
-  // Add sync entry
-  const modifiedTables = ['observacion']
-  if (gpsId) modifiedTables.push('puntos_gps')
-
-  const { error: syncError } = await supabase
-    .from('sync')
-    .insert({
-      tables: modifiedTables
-    })
-
-  if (syncError) console.warn('Sync table entry failed:', syncError)
-
   return obsData.id_observacion
 }

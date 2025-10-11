@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createModel } from 'vosk-browser'
+import type { UseVoskOptions } from '@/types'
 
 function normalizeSpanish(text: string) {
     return text
@@ -12,12 +13,9 @@ function normalizeSpanish(text: string) {
         .trim()
 }
 
-type UseVoskOptions = {
-    onResult?: (text: string, isFinal: boolean) => void
-}
-
 export function useVosk(options: UseVoskOptions = {}) {
     const { onResult } = options
+    const [isInitializing, setIsInitializing] = useState(false)
     const [isListening, setIsListening] = useState(false)
     const [transcript, setTranscript] = useState('')
     const [partialTranscript, setPartialTranscript] = useState('')
@@ -67,6 +65,7 @@ export function useVosk(options: UseVoskOptions = {}) {
     }, [])
 
     const start = async () => {
+        setIsInitializing(true)
         try {
             if (!modelRef.current) {
                 modelRef.current = await createModel('/models/vosk-model-small-es-0.42.tar.gz')
@@ -77,7 +76,7 @@ export function useVosk(options: UseVoskOptions = {}) {
                 recognizerRef.current.on('result', (message: any) => {
                     const text = normalizeSpanish(String(message?.result?.text || ''))
                     if (text) {
-                        setTranscript(prev => `${prev} ${text}`.trim())
+                        setTranscript(text)
                         onResult?.(text, true)
                     }
                     setPartialTranscript('')
@@ -111,12 +110,15 @@ export function useVosk(options: UseVoskOptions = {}) {
             setIsListening(true)
         } catch (error) {
             console.error('Error starting recognition:', error)
+        } finally {
+            setIsInitializing(false)
         }
     }
 
     const stop = () => {
         try {
             setPartialTranscript('')
+            setTranscript('')
             if (processorRef.current) {
                 processorRef.current.disconnect()
                 processorRef.current.onaudioprocess = null as any
@@ -151,5 +153,5 @@ export function useVosk(options: UseVoskOptions = {}) {
         }
     }, [])
 
-    return { isListening, start, stop, transcript, partialTranscript, audioContext: audioContextRef.current, mediaStream: mediaStreamRef.current }
+    return { isInitializing, isListening, start, stop, transcript, partialTranscript, audioContext: audioContextRef.current, mediaStream: mediaStreamRef.current }
 }

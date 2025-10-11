@@ -110,3 +110,29 @@ export function parseSpanishNumber(text: string): number | null {
 
     return null
 }
+
+/**
+ * Tries to parse a Spanish number from an array of words, consuming 1-3 words.
+ * Returns { number, wordsConsumed } if successful, null otherwise.
+ */
+export function parseSpanishNumberFromWords(words: string[], startIndex: number): { number: number, wordsConsumed: number } | null {
+    // Try 3 words (e.g., "treinta y uno")
+    if (startIndex + 2 < words.length) {
+        const num = parseSpanishNumber(words.slice(startIndex, startIndex + 3).join(' '))
+        if (num !== null) return { number: num, wordsConsumed: 3 }
+    }
+
+    // Try 2 words (e.g., "treinta uno")
+    if (startIndex + 1 < words.length) {
+        const num = parseSpanishNumber(words.slice(startIndex, startIndex + 2).join(' '))
+        if (num !== null) return { number: num, wordsConsumed: 2 }
+    }
+
+    // Try 1 word (e.g., "diez")
+    if (startIndex < words.length) {
+        const num = parseSpanishNumber(words[startIndex])
+        if (num !== null) return { number: num, wordsConsumed: 1 }
+    }
+
+    return null
+}

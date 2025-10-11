@@ -1,14 +1,5 @@
 import { supabase } from '@/lib/supabase'
-
-export type GpsPoint = {
-  id: string
-  latitud: number
-  longitud: number
-  precision: number
-  altitud: number | null
-  usuario_id: string | null
-  creado_en: string
-}
+import type { GpsPoint } from '@/types'
 
 export async function getGpsPointsForDate(date: string): Promise<GpsPoint[]> {
   const startOfDay = `${date}T00:00:00.000`

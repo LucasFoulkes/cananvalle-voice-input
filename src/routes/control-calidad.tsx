@@ -3,16 +3,13 @@ import { useEffect, useState } from 'react'
 import { isControlCalidad } from '@/lib/auth'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Loader2, ChevronLeft, ChevronRight, Map } from 'lucide-react'
-import { createUsuario, getAllUsuarios, type CreateUsuarioInput } from '@/services/usuarioManagementService'
-import { getUserTimelines, type UserTimeline } from '@/services/timelineService'
-import { getGpsPointsForDate, type GpsPoint } from '@/services/gpsService'
+import { getUserTimelines } from '@/services/timelineService'
+import { getGpsPointsForDate } from '@/services/gpsService'
 import { UserTimelineView } from '@/components/UserTimeline'
 import { GpsMap } from '@/components/GpsMap'
-import type { Usuario } from '@/types'
+import type { UserTimeline, GpsPoint } from '@/types'
 
 export const Route = createFileRoute('/control-calidad')({
   component: ControlCalidadComponent,
@@ -29,26 +26,12 @@ function getLocalDateString(): string {
 
 function ControlCalidadComponent() {
   const navigate = useNavigate()
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [, setLoadingUsers] = useState(false)
   const [loadingTimeline, setLoadingTimeline] = useState(false)
-  const [error, setError] = useState('')
-  const [usuarios, setUsuarios] = useState<Usuario[]>([])
-  const [isUsersOpen] = useState(false)
   const [timelines, setTimelines] = useState<UserTimeline[]>([])
   const [selectedDate, setSelectedDate] = useState(getLocalDateString())
   const [showMapDialog, setShowMapDialog] = useState(false)
   const [gpsPoints, setGpsPoints] = useState<GpsPoint[]>([])
   const [loadingGps, setLoadingGps] = useState(false)
-
-  const [formData, setFormData] = useState<CreateUsuarioInput>({
-    nombres: '',
-    apellidos: '',
-    cedula: '',
-    rol: 'conteos',
-    clave_pin: ''
-  })
 
   useEffect(() => {
     if (!isControlCalidad()) {
@@ -57,12 +40,6 @@ function ControlCalidadComponent() {
     }
     loadTimeline()
   }, [])
-
-  useEffect(() => {
-    if (isUsersOpen && usuarios.length === 0) {
-      loadUsers()
-    }
-  }, [isUsersOpen])
 
   useEffect(() => {
     loadTimeline()
@@ -77,19 +54,6 @@ function ControlCalidadComponent() {
       console.error('Error loading timeline:', err)
     } finally {
       setLoadingTimeline(false)
-    }
-  }
-
-  const loadUsers = async () => {
-    try {
-      setLoadingUsers(true)
-      const users = await getAllUsuarios()
-      setUsuarios(users)
-    } catch (err) {
-      console.error('Error loading users:', err)
-      setError('Error al cargar usuarios')
-    } finally {
-      setLoadingUsers(false)
     }
   }
 
@@ -157,36 +121,13 @@ function ControlCalidadComponent() {
     }
   })
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    try {
-      await createUsuario(formData)
-      setShowCreateDialog(false)
-      setFormData({
-        nombres: '',
-        apellidos: '',
-        cedula: '',
-        rol: 'conteos',
-        clave_pin: ''
-      })
-      await loadUsers()
-    } catch (err: any) {
-      setError(err.message || 'Error al crear usuario')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   if (!isControlCalidad()) {
     return null
   }
 
   return (
     <div className='h-full flex flex-col p-2 gap-1'>
-      <Card className='bg-zinc-900 border-none text-white flex-1 min-h-0 flex flex-col'>
+      <Card className='bg-zinc-800 border-none text-white flex-1 min-h-0 flex flex-col'>
         <CardContent className='flex-1 min-h-0 flex flex-col gap-2 px-2'>
           <div className='flex items-center justify-between flex-shrink-0'>
             <Button
@@ -198,7 +139,7 @@ function ControlCalidadComponent() {
               <ChevronLeft />
             </Button>
             <div className='flex items-center gap-2'>
-              <span className='text-lg font-medium text-center capitalize flex-shrink-0'>
+              <span className='text-xl text-center capitalize flex-shrink-0'>
                 {formatDisplayDate(selectedDate)}
               </span>
               <Button
@@ -231,98 +172,6 @@ function ControlCalidadComponent() {
           </div>
         </CardContent>
       </Card>
-
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className='bg-zinc-900 text-white border-zinc-700'>
-          <DialogHeader>
-            <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreate} className='space-y-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='nombres'>Nombres *</Label>
-              <Input
-                id='nombres'
-                value={formData.nombres}
-                onChange={(e) => setFormData({ ...formData, nombres: e.target.value })}
-                className='bg-zinc-800 border-zinc-700 text-white'
-                required
-                autoFocus
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='apellidos'>Apellidos</Label>
-              <Input
-                id='apellidos'
-                value={formData.apellidos}
-                onChange={(e) => setFormData({ ...formData, apellidos: e.target.value })}
-                className='bg-zinc-800 border-zinc-700 text-white'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='cedula'>Cédula</Label>
-              <Input
-                id='cedula'
-                value={formData.cedula}
-                onChange={(e) => setFormData({ ...formData, cedula: e.target.value })}
-                className='bg-zinc-800 border-zinc-700 text-white'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='rol'>Rol *</Label>
-              <select
-                id='rol'
-                value={formData.rol}
-                onChange={(e) => setFormData({ ...formData, rol: e.target.value as 'conteos' | 'control_de_calidad' })}
-                className='flex h-9 w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1 text-sm text-white shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-400'
-                required
-              >
-                <option value='conteos'>Conteos</option>
-                <option value='control_de_calidad'>Control de Calidad</option>
-              </select>
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='clave_pin'>PIN (4 dígitos) *</Label>
-              <Input
-                id='clave_pin'
-                type='password'
-                inputMode='numeric'
-                pattern='[0-9]{4}'
-                maxLength={4}
-                value={formData.clave_pin}
-                onChange={(e) => setFormData({ ...formData, clave_pin: e.target.value })}
-                className='bg-zinc-800 border-zinc-700 text-white text-center tracking-widest'
-                required
-              />
-            </div>
-
-            {error && (
-              <p className='text-red-400 text-sm text-center'>{error}</p>
-            )}
-
-            <div className='grid grid-cols-2 gap-2'>
-              <Button
-                type='button'
-                onClick={() => setShowCreateDialog(false)}
-                className='bg-zinc-700 hover:bg-zinc-600'
-                disabled={loading}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type='submit'
-                className='bg-green-600 hover:bg-green-700'
-                disabled={loading}
-              >
-                {loading ? 'Creando...' : 'Crear'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={showMapDialog} onOpenChange={setShowMapDialog}>
         <DialogContent className='bg-zinc-900 text-white border-zinc-700 p-0 overflow-hidden'>

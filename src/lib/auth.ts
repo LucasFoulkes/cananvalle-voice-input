@@ -11,6 +11,11 @@ export function getCurrentUser(): Usuario | null {
   }
 }
 
+export function getCurrentUserId(): number | null {
+  const user = getCurrentUser()
+  return user?.id_usuario || null
+}
+
 export function setCurrentUser(usuario: Usuario | null) {
   if (usuario) {
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(usuario))

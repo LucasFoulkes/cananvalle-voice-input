@@ -1,61 +1,60 @@
-import * as React from 'react'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogClose,
+    DialogFooter,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
+import { useState } from 'react'
 
-type ButtonBaseProps = React.ComponentProps<typeof Button>
-
-export type TileButtonProps = Omit<ButtonBaseProps, 'children'> & {
+type TileButtonProps = {
     label: string
-    value?: React.ReactNode
-    square?: boolean
-    labelClassName?: string
-    valueClassName?: string
-    isActive?: boolean
-    isReady?: boolean
+    value: string
+    onSave: (val: string) => void
 }
 
-export function TileButton({
-    label,
-    value,
-    className,
-    square,
-    labelClassName,
-    valueClassName,
-    isActive,
-    isReady,
-    ...buttonProps
-}: TileButtonProps) {
-    const [isFlashing, setIsFlashing] = React.useState(false)
-    const prevValueRef = React.useRef(value)
+export function TileButton({ label, value, onSave }: TileButtonProps) {
+    const [open, setOpen] = useState(false)
 
-    React.useEffect(() => {
-        if (prevValueRef.current !== value && prevValueRef.current !== undefined) {
-            setIsFlashing(true)
-            const timer = setTimeout(() => setIsFlashing(false), 500)
-            return () => clearTimeout(timer)
+    const handleSave = (input: HTMLInputElement) => {
+        if (input.value) {
+            onSave(input.value)
+            setOpen(false)
         }
-        prevValueRef.current = value
-    }, [value])
+    }
 
     return (
-        <Button
-            className={cn(
-                'flex flex-col justify-center items-center h-fit py-1 gap-1 transition-colors duration-500 text-white',
-                square && 'aspect-square',
-                !isFlashing && isActive && 'bg-green-500 hover:bg-green-600',
-                !isFlashing && isReady && 'bg-emerald-500 hover:bg-emerald-600',
-                isFlashing && 'bg-blue-500',
-                className,
-            )}
-            {...buttonProps}
-        >
-            <Label className={cn('text-xs text-white', labelClassName)}>{label}</Label>
-            {value !== undefined && (
-                <span className={cn('text-4xl text-white', valueClassName)}>{value}</span>
-            )}
-        </Button>
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <div className="aspect-square bg-zinc-800 rounded-xl flex items-center relative cursor-pointer">
+                    <span className='uppercase font-medium text-center absolute top-0 w-full'>{label}</span>
+                    <span className='text-center text-5xl font-regular w-full'>{value || '-'}</span>
+                </div>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle className='uppercase'>{label}</DialogTitle>
+                </DialogHeader>
+                <Input autoFocus onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value) {
+                        handleSave(e.currentTarget)
+                    }
+                }} />
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                    <DialogClose asChild>
+                        <Button onClick={(e) => {
+                            const dialogContent = e.currentTarget.closest('[role="dialog"]')
+                            const input = dialogContent?.querySelector('input') as HTMLInputElement
+                            if (input) handleSave(input)
+                        }}>Guardar</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     )
 }
-
-export default TileButton

@@ -9,19 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UsuariosRouteImport } from './routes/usuarios'
 import { Route as ObservacionesRouteImport } from './routes/observaciones'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as FincasRouteImport } from './routes/fincas'
 import { Route as ControlCalidadRouteImport } from './routes/control-calidad'
-import { Route as ConfiguracionRouteImport } from './routes/configuracion'
 import { Route as IndexRouteImport } from './routes/index'
 
-const UsuariosRoute = UsuariosRouteImport.update({
-  id: '/usuarios',
-  path: '/usuarios',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ObservacionesRoute = ObservacionesRouteImport.update({
   id: '/observaciones',
   path: '/observaciones',
@@ -32,19 +24,9 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FincasRoute = FincasRouteImport.update({
-  id: '/fincas',
-  path: '/fincas',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ControlCalidadRoute = ControlCalidadRouteImport.update({
   id: '/control-calidad',
   path: '/control-calidad',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConfiguracionRoute = ConfiguracionRouteImport.update({
-  id: '/configuracion',
-  path: '/configuracion',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -55,81 +37,40 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/configuracion': typeof ConfiguracionRoute
   '/control-calidad': typeof ControlCalidadRoute
-  '/fincas': typeof FincasRoute
   '/login': typeof LoginRoute
   '/observaciones': typeof ObservacionesRoute
-  '/usuarios': typeof UsuariosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/configuracion': typeof ConfiguracionRoute
   '/control-calidad': typeof ControlCalidadRoute
-  '/fincas': typeof FincasRoute
   '/login': typeof LoginRoute
   '/observaciones': typeof ObservacionesRoute
-  '/usuarios': typeof UsuariosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/configuracion': typeof ConfiguracionRoute
   '/control-calidad': typeof ControlCalidadRoute
-  '/fincas': typeof FincasRoute
   '/login': typeof LoginRoute
   '/observaciones': typeof ObservacionesRoute
-  '/usuarios': typeof UsuariosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/configuracion'
-    | '/control-calidad'
-    | '/fincas'
-    | '/login'
-    | '/observaciones'
-    | '/usuarios'
+  fullPaths: '/' | '/control-calidad' | '/login' | '/observaciones'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/configuracion'
-    | '/control-calidad'
-    | '/fincas'
-    | '/login'
-    | '/observaciones'
-    | '/usuarios'
-  id:
-    | '__root__'
-    | '/'
-    | '/configuracion'
-    | '/control-calidad'
-    | '/fincas'
-    | '/login'
-    | '/observaciones'
-    | '/usuarios'
+  to: '/' | '/control-calidad' | '/login' | '/observaciones'
+  id: '__root__' | '/' | '/control-calidad' | '/login' | '/observaciones'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ConfiguracionRoute: typeof ConfiguracionRoute
   ControlCalidadRoute: typeof ControlCalidadRoute
-  FincasRoute: typeof FincasRoute
   LoginRoute: typeof LoginRoute
   ObservacionesRoute: typeof ObservacionesRoute
-  UsuariosRoute: typeof UsuariosRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/usuarios': {
-      id: '/usuarios'
-      path: '/usuarios'
-      fullPath: '/usuarios'
-      preLoaderRoute: typeof UsuariosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/observaciones': {
       id: '/observaciones'
       path: '/observaciones'
@@ -144,25 +85,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/fincas': {
-      id: '/fincas'
-      path: '/fincas'
-      fullPath: '/fincas'
-      preLoaderRoute: typeof FincasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/control-calidad': {
       id: '/control-calidad'
       path: '/control-calidad'
       fullPath: '/control-calidad'
       preLoaderRoute: typeof ControlCalidadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/configuracion': {
-      id: '/configuracion'
-      path: '/configuracion'
-      fullPath: '/configuracion'
-      preLoaderRoute: typeof ConfiguracionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -177,12 +104,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ConfiguracionRoute: ConfiguracionRoute,
   ControlCalidadRoute: ControlCalidadRoute,
-  FincasRoute: FincasRoute,
   LoginRoute: LoginRoute,
   ObservacionesRoute: ObservacionesRoute,
-  UsuariosRoute: UsuariosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

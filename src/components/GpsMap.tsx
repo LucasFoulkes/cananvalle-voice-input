@@ -1,21 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-
-type GpsPoint = {
-  id: string
-  latitud: number
-  longitud: number
-  precision: number
-  usuario_id: string | null
-  creado_en: string
-}
-
-type UserInfo = {
-  id_usuario: string
-  nombres: string
-  apellidos: string | null
-}
+import type { GpsPoint, UserInfo } from '@/types'
 
 type Props = {
   points: GpsPoint[]

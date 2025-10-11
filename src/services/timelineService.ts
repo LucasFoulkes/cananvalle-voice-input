@@ -1,22 +1,5 @@
 import { supabase } from '../lib/supabase'
-
-export type CamaTimelineSegment = {
-  id_cama: number
-  finca: string
-  bloque: string
-  cama: string
-  first_observation: string
-  last_observation: string
-  observation_count: number
-  color: string
-}
-
-export type UserTimeline = {
-  id_usuario: number
-  nombres: string
-  apellidos: string | null
-  segments: CamaTimelineSegment[]
-}
+import type { CamaTimelineSegment, UserTimeline } from '../types'
 
 function generateColor(index: number): string {
   const colors = [

@@ -1,9 +1,9 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Eye } from 'lucide-react'
-import type { UserTimeline } from '@/services/timelineService'
+import type { UserTimeline, CamaTimelineSegment } from '@/types'
 
 type Props = {
   timelines: UserTimeline[]
@@ -32,7 +32,7 @@ export function UserTimelineView({ timelines }: Props) {
   let latestTime = -Infinity
 
   timelines.forEach(timeline => {
-    timeline.segments.forEach(segment => {
+    timeline.segments.forEach((segment: CamaTimelineSegment) => {
       const firstTime = parseLocalTime(segment.first_observation).getTime()
       const lastTime = parseLocalTime(segment.last_observation).getTime()
       if (firstTime < earliestTime) earliestTime = firstTime
@@ -82,12 +82,12 @@ export function UserTimelineView({ timelines }: Props) {
         <div className='space-y-6'>
           {timelines.map(timeline => {
             // Calculate overall stats
-            const allTimes = timeline.segments.map(s => parseLocalTime(s.last_observation).getTime() - parseLocalTime(s.first_observation).getTime())
-            allTimes.sort((a, b) => a - b)
+            const allTimes = timeline.segments.map((s: CamaTimelineSegment) => parseLocalTime(s.last_observation).getTime() - parseLocalTime(s.first_observation).getTime())
+            allTimes.sort((a: number, b: number) => a - b)
             const medianTime = allTimes.length > 0 ? allTimes[Math.floor(allTimes.length / 2)] / (1000 * 60) : 0
 
-            const allObsCounts = timeline.segments.map(s => s.observation_count)
-            allObsCounts.sort((a, b) => a - b)
+            const allObsCounts = timeline.segments.map((s: CamaTimelineSegment) => s.observation_count)
+            allObsCounts.sort((a: number, b: number) => a - b)
             const medianObs = allObsCounts.length > 0 ? allObsCounts[Math.floor(allObsCounts.length / 2)] : 0
 
             return (
@@ -97,8 +97,8 @@ export function UserTimelineView({ timelines }: Props) {
                 </div>
 
                 {/* Bar */}
-                <div className='relative h-6 bg-zinc-800 rounded overflow-hidden'>
-                  {timeline.segments.map((segment, idx) => {
+                <div className='relative h-6 bg-zinc-900 rounded overflow-hidden'>
+                  {timeline.segments.map((segment: CamaTimelineSegment, idx: number) => {
                     const left = getPosition(segment.first_observation)
                     const width = getWidth(segment.first_observation, segment.last_observation)
 
@@ -135,7 +135,7 @@ export function UserTimelineView({ timelines }: Props) {
                 {/* Summary and button */}
                 <div className='flex items-center justify-between'>
                   <div className='text-xs text-zinc-400'>
-                    {timeline.segments.length} camas • {Math.round(medianTime)}min/cama • {medianObs}obs/cama
+                    {timeline.segments.length} camas  {Math.round(medianTime)}min/cama  {medianObs}obs/cama
                   </div>
                   <Button
                     variant='ghost'
@@ -166,7 +166,7 @@ export function UserTimelineView({ timelines }: Props) {
               <div className='space-y-6 pr-4'>
                 {(() => {
                   // Group segments by finca, then by bloque
-                  const groupedByFinca = detailsTimeline.segments.reduce((acc, segment) => {
+                  const groupedByFinca = detailsTimeline.segments.reduce((acc: Record<string, Record<string, CamaTimelineSegment[]>>, segment: CamaTimelineSegment) => {
                     if (!acc[segment.finca]) {
                       acc[segment.finca] = {}
                     }
@@ -175,19 +175,19 @@ export function UserTimelineView({ timelines }: Props) {
                     }
                     acc[segment.finca][segment.bloque].push(segment)
                     return acc
-                  }, {} as Record<string, Record<string, typeof detailsTimeline.segments>>)
+                  }, {})
 
                   return Object.entries(groupedByFinca).map(([finca, bloques]) => {
                     // Calculate finca-level stats
                     const allFincaSegments = Object.values(bloques).flat()
-                    const fincaFirstTime = new Date(Math.min(...allFincaSegments.map(s => parseLocalTime(s.first_observation).getTime())))
-                    const fincaLastTime = new Date(Math.max(...allFincaSegments.map(s => parseLocalTime(s.last_observation).getTime())))
+                    const fincaFirstTime = new Date(Math.min(...allFincaSegments.map((s: CamaTimelineSegment) => parseLocalTime(s.first_observation).getTime())))
+                    const fincaLastTime = new Date(Math.max(...allFincaSegments.map((s: CamaTimelineSegment) => parseLocalTime(s.last_observation).getTime())))
                     const bloqueCount = Object.keys(bloques).length
-                    const fincaTotalTime = allFincaSegments.reduce((sum, s) => {
+                    const fincaTotalTime = allFincaSegments.reduce((sum: number, s: CamaTimelineSegment) => {
                       return sum + (parseLocalTime(s.last_observation).getTime() - parseLocalTime(s.first_observation).getTime())
                     }, 0)
                     const fincaAvgTimePerBloque = Math.round(fincaTotalTime / bloqueCount / (1000 * 60))
-                    const fincaTotalObs = allFincaSegments.reduce((sum, s) => sum + s.observation_count, 0)
+                    const fincaTotalObs = allFincaSegments.reduce((sum: number, s: CamaTimelineSegment) => sum + s.observation_count, 0)
                     const fincaAvgObsPerBloque = Math.round(fincaTotalObs / bloqueCount)
 
                     const fincaFirstTimeStr = `${fincaFirstTime.getHours()}:${String(fincaFirstTime.getMinutes()).padStart(2, '0')}`
@@ -198,19 +198,19 @@ export function UserTimelineView({ timelines }: Props) {
                         <div className='flex items-center gap-3 mb-2'>
                           <div className='text-sm font-semibold text-white'>Finca {finca}</div>
                           <div className='text-xs text-zinc-400'>
-                            {fincaFirstTimeStr} - {fincaLastTimeStr} • {fincaAvgTimePerBloque}min/bloque • {fincaAvgObsPerBloque}obs/bloque
+                            {fincaFirstTimeStr} - {fincaLastTimeStr}  {fincaAvgTimePerBloque}min/bloque  {fincaAvgObsPerBloque}obs/bloque
                           </div>
                         </div>
-                        {Object.entries(bloques).map(([bloque, segments]) => {
+                        {Object.entries(bloques).map(([bloque, segments]: [string, CamaTimelineSegment[]]) => {
                           // Calculate bloque-level stats
-                          const bloqueFirstTime = new Date(Math.min(...segments.map(s => parseLocalTime(s.first_observation).getTime())))
-                          const bloqueLastTime = new Date(Math.max(...segments.map(s => parseLocalTime(s.last_observation).getTime())))
-                          const bloqueTotalTime = segments.reduce((sum, s) => {
+                          const bloqueFirstTime = new Date(Math.min(...segments.map((s: CamaTimelineSegment) => parseLocalTime(s.first_observation).getTime())))
+                          const bloqueLastTime = new Date(Math.max(...segments.map((s: CamaTimelineSegment) => parseLocalTime(s.last_observation).getTime())))
+                          const bloqueTotalTime = segments.reduce((sum: number, s: CamaTimelineSegment) => {
                             return sum + (parseLocalTime(s.last_observation).getTime() - parseLocalTime(s.first_observation).getTime())
                           }, 0)
                           const bloqueTotalTimeMin = Math.round(bloqueTotalTime / (1000 * 60))
                           const bloqueAvgTimePerCama = Math.round(bloqueTotalTime / segments.length / (1000 * 60))
-                          const bloqueTotalObs = segments.reduce((sum, s) => sum + s.observation_count, 0)
+                          const bloqueTotalObs = segments.reduce((sum: number, s: CamaTimelineSegment) => sum + s.observation_count, 0)
                           const bloqueAvgObsPerCama = Math.round(bloqueTotalObs / segments.length)
 
                           const bloqueFirstTimeStr = `${bloqueFirstTime.getHours()}:${String(bloqueFirstTime.getMinutes()).padStart(2, '0')}`
@@ -221,11 +221,11 @@ export function UserTimelineView({ timelines }: Props) {
                               <div className='flex items-center gap-3 mb-2'>
                                 <div className='text-xs font-medium text-zinc-400'>Bloque {bloque}</div>
                                 <div className='text-xs text-zinc-500'>
-                                  {bloqueFirstTimeStr} - {bloqueLastTimeStr} • {bloqueTotalTimeMin}min • {bloqueAvgTimePerCama}min/cama • {bloqueAvgObsPerCama}obs/cama
+                                  {bloqueFirstTimeStr} - {bloqueLastTimeStr}  {bloqueTotalTimeMin}min  {bloqueAvgTimePerCama}min/cama  {bloqueAvgObsPerCama}obs/cama
                                 </div>
                               </div>
                               <div className='grid grid-cols-1 gap-2'>
-                                {segments.map((segment, idx) => {
+                                {segments.map((segment: CamaTimelineSegment, idx: number) => {
                                   const firstTime = parseLocalTime(segment.first_observation)
                                   const lastTime = parseLocalTime(segment.last_observation)
                                   const timeDiff = Math.round((lastTime.getTime() - firstTime.getTime()) / (1000 * 60))

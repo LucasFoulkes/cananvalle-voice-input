@@ -1,114 +1,97 @@
-import * as React from 'react'
-import { Outlet, createRootRoute, useNavigate, useLocation } from '@tanstack/react-router'
+import { Outlet, createRootRoute, useNavigate, useLocation, redirect } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Link } from "@tanstack/react-router";
 import { Pencil, ClipboardList, LogOut, ShieldCheck, Settings } from 'lucide-react'
-import { isAuthenticated, logout, getCurrentUser, isControlCalidad } from '@/lib/auth'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { logout, isControlCalidad, isAuthenticated } from '@/lib/auth'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog'
 
 export const Route = createRootRoute({
+  beforeLoad: ({ location }) => {
+    if (location.pathname !== '/login' && !isAuthenticated()) {
+      throw redirect({ to: '/login' })
+    }
+  },
   component: RootComponent,
 })
 
 function RootComponent() {
-  const navigate = useNavigate()
   const location = useLocation()
-  const isLoginPage = location.pathname === '/login'
-  const [showLogoutDialog, setShowLogoutDialog] = React.useState(false)
-  const currentUser = getCurrentUser()
-  const hasControlCalidadAccess = isControlCalidad()
-
-  React.useEffect(() => {
-    if (!isAuthenticated() && !isLoginPage) {
-      navigate({ to: '/login' })
-    }
-  }, [location.pathname, isLoginPage])
+  const navigate = useNavigate()
 
   const handleLogout = () => {
     logout()
-    setShowLogoutDialog(false)
     navigate({ to: '/login' })
   }
 
-  const baseNavItems = [
-    { to: '/', label: 'Entrada', Icon: Pencil },
-    { to: '/observaciones', label: 'Observaciones', Icon: ClipboardList },
-    { to: '/configuracion', label: 'Config', Icon: Settings },
-  ]
-
-  const navItems = hasControlCalidadAccess
-    ? [...baseNavItems, { to: '/control-calidad', label: 'Control', Icon: ShieldCheck }]
-    : baseNavItems
-
   // Don't show nav on login page
-  if (isLoginPage) {
-    return <Outlet />
+  if (location.pathname === '/login') {
+    return (
+      <div className='h-screen bg-black text-white'>
+        <Outlet />
+      </div>
+    )
   }
 
-  const gridCols = hasControlCalidadAccess ? 'grid-cols-5' : 'grid-cols-4'
+  const hasControlCalidadAccess = isControlCalidad()
+
+  const navItems = [
+    { to: '/', Icon: Pencil },
+    { to: '/observaciones', Icon: ClipboardList },
+    ...(hasControlCalidadAccess ? [{ to: '/control-calidad', Icon: ShieldCheck }] : []),
+  ]
 
   return (
-    <React.Fragment>
-      <div className='h-screen grid grid-rows-[1fr_auto] bg-black text-white'>
-        <main className='min-h-0 overflow-y-auto'>
-          <Outlet />
-        </main>
-        <nav className={`grid ${gridCols} w-full pb-5 px-3 bg-indigo-600 rounded-t-lg items-center gap-1 p-1`}>
-          {navItems.map(({ to, label, Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              className='group'
-              activeProps={{ 'data-active': true, 'aria-current': 'page' }}
-              activeOptions={{ exact: to === '/' }}
-            >
-              <Button
-                className='
-                      bg-indigo-500 text-white transition-colors w-full group-data-[active=true]:bg-indigo-400 flex flex-col gap-1 h-auto py-2'
-                aria-label={label}
-              >
-                <Icon className='w-12 h-12 p-0' />
-                <span className='text-[8px]'>{label}</span>
-              </Button>
-            </Link>
-          ))}
-          <Button
-            onClick={() => setShowLogoutDialog(true)}
-            className='bg-indigo-500 text-white hover:bg-indigo-600 transition-colors w-full flex flex-col gap-1 h-auto py-2 capitalize'
-            aria-label='Cerrar sesión'
-          >
-            <LogOut className='w-12 h-12' />
-            <span className='text-[8px]'>{currentUser?.nombres || 'Salir'}</span>
-          </Button>
-        </nav>
+    <div className='h-screen grid grid-rows-[1fr_auto] bg-black text-white'>
+      <main className='min-h-0 overflow-y-auto'>
+        <Outlet />
+      </main>
 
-        <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
-          <DialogContent className='bg-zinc-900 text-white border-zinc-700'>
-            <DialogHeader>
-              <DialogTitle className='text-center'>Cerrar Sesión</DialogTitle>
-            </DialogHeader>
-            <div className='flex flex-col gap-4 pt-4'>
-              <p className='text-center text-sm'>
-                ¿Está seguro que desea cerrar sesión?
-              </p>
-              <div className='grid grid-cols-2 gap-2 capitalize'>
-                <Button
-                  onClick={() => setShowLogoutDialog(false)}
-                  className='bg-zinc-700 hover:bg-zinc-600 capitalize'
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleLogout}
-                  className='bg-red-600 hover:bg-red-700'
-                >
-                  Salir
-                </Button>
+      {/* navbar */}
+      <nav className='flex pb-5 pt-1 px-5 bg-zinc-800 rounded-t-xl items-stretch gap-1'>
+        {navItems.map(({ to, Icon }) => (
+          <Link
+            key={to}
+            to={to}
+            className='flex-1 group'
+            activeProps={{ 'data-active': true, 'aria-current': 'page' }}
+            activeOptions={{ exact: to === '/' }}
+          >
+            <Button className='w-full h-full bg-zinc-800 group-data-[active=true]:bg-zinc-900 rounded-full'>
+              <Icon className='size-8' />
+            </Button>
+          </Link>
+        ))}
+
+        <div className='flex-1'>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className='w-full h-full bg-zinc-800 '>
+                <LogOut className='size-8' />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className='bg-zinc-900 text-white border-zinc-700'>
+              <DialogHeader>
+                <DialogTitle className='text-center'>Cerrar Sesión</DialogTitle>
+              </DialogHeader>
+              <div className='flex flex-col gap-4 pt-4'>
+                <p className='text-center text-sm'>
+                  ¿Está seguro que desea cerrar sesión?
+                </p>
+                <div className='grid grid-cols-2 gap-2'>
+                  <DialogClose asChild>
+                    <Button className='bg-zinc-700'>
+                      Cancelar
+                    </Button>
+                  </DialogClose>
+                  <Button onClick={handleLogout} className='bg-red-600'>
+                    Salir
+                  </Button>
+                </div>
               </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </React.Fragment>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </nav >
+    </div >
   )
 }

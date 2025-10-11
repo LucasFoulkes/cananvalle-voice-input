@@ -1,13 +1,5 @@
 import { supabase } from '../lib/supabase'
-import type { Usuario } from '../types'
-
-export type CreateUsuarioInput = {
-  nombres: string
-  apellidos?: string
-  cedula?: string
-  rol: 'conteos' | 'control_de_calidad'
-  clave_pin: string
-}
+import type { Usuario, CreateUsuarioInput } from '../types'
 
 export async function createUsuario(input: CreateUsuarioInput): Promise<Usuario> {
   const { data, error } = await supabase

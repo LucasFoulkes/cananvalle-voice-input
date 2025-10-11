@@ -12,6 +12,24 @@ export function AudioVisualizer({ isListening, audioContext, stream }: AudioVisu
   const analyserRef = useRef<AnalyserNode | undefined>(undefined)
 
   useEffect(() => {
+    if (!canvasRef.current) return
+
+    const canvas = canvasRef.current
+    const resizeCanvas = () => {
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width
+      canvas.height = rect.height
+    }
+
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!isListening || !audioContext || !stream || !canvasRef.current) {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
@@ -48,11 +66,9 @@ export function AudioVisualizer({ isListening, audioContext, stream }: AudioVisu
       for (let i = 0; i < bufferLength; i++) {
         const barHeight = (dataArray[i] / 255) * (canvas.height / 2)
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-        // Draw top half (mirrored)
-        ctx.fillRect(x, canvas.height / 2 - barHeight, barWidth, barHeight)
-        // Draw bottom half
-        ctx.fillRect(x, canvas.height / 2, barWidth, barHeight)
+        ctx.fillStyle = 'rgba(255, 255, 255)'
+        // Draw from center outward - bars meet in the middle
+        ctx.fillRect(x, (canvas.height / 2) - barHeight, barWidth, barHeight * 2)
 
         x += barWidth + 1
       }
@@ -71,9 +87,7 @@ export function AudioVisualizer({ isListening, audioContext, stream }: AudioVisu
   return (
     <canvas
       ref={canvasRef}
-      width={800}
-      height={200}
-      style={{ width: '100%', height: '100%' }}
+      style={{ width: '100%', height: '100%', display: 'block' }}
     />
   )
 }
