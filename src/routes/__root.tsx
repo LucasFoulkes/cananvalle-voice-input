@@ -1,7 +1,7 @@
 import { Outlet, createRootRoute, useNavigate, useLocation, redirect } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Link } from "@tanstack/react-router";
-import { Pencil, ClipboardList, LogOut, ShieldCheck, Settings } from 'lucide-react'
+import { Pencil, ClipboardList, LogOut, ShieldCheck } from 'lucide-react'
 import { logout, isControlCalidad, isAuthenticated } from '@/lib/auth'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog'
 
