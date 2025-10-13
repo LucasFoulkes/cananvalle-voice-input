@@ -58,7 +58,7 @@ export async function syncObservationToSupabase(observation: Observation) {
         console.log('Inserting GPS with data:', gpsInsertData)
 
         const { data: gpsInsert, error: gpsError } = await supabase
-          .from('puntos_gps')
+          .from('punto_gps')
           .insert(gpsInsertData)
           .select('id')
           .single()

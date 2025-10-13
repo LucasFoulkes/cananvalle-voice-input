@@ -6,7 +6,7 @@ export async function getGpsPointsForDate(date: string): Promise<GpsPoint[]> {
   const endOfDay = `${date}T23:59:59.999`
 
   const { data, error } = await supabase
-    .from('puntos_gps')
+    .from('punto_gps')
     .select('id, latitud, longitud, precision, altitud, usuario_id, creado_en')
     .gte('creado_en', startOfDay)
     .lte('creado_en', endOfDay)

@@ -7,7 +7,7 @@ export async function syncUsuarios(): Promise<Usuario[]> {
   try {
     const { data, error } = await supabase
       .from('usuario')
-      .select('id_usuario, nombres, apellidos, cedula, rol, clave_pin, creado_en')
+      .select('id_usuario, nombres, apellidos, cedula, rol, pin, nombre_usuario, creado_en')
 
     if (error) throw error
 
@@ -39,5 +39,5 @@ export async function getUsuarios(): Promise<Usuario[]> {
 
 export function validatePin(pin: string): Usuario | null {
   const usuarios = getLocalUsuarios()
-  return usuarios.find(u => u.clave_pin === pin) || null
+  return usuarios.find(u => u.pin === pin) || null
 }

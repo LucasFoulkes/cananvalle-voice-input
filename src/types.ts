@@ -22,7 +22,8 @@ export type Usuario = {
     apellidos: string | null
     cedula: string | null
     rol: string
-    clave_pin: string
+    pin: string
+    nombre_usuario?: string | null
     creado_en?: string
 }
 
@@ -31,7 +32,7 @@ export type CreateUsuarioInput = {
     apellidos?: string
     cedula?: string
     rol: 'conteos' | 'control_de_calidad'
-    clave_pin: string
+    pin: string
 }
 
 export type UserInfo = {

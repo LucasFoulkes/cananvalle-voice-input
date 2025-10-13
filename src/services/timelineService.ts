@@ -43,7 +43,7 @@ export async function getUserTimelines(date: string): Promise<UserTimeline[]> {
       tipo_observacion,
       creado_en,
       id_punto_gps,
-      id_punto_gps:puntos_gps(latitud, longitud, precision, altitud, creado_en),
+  id_punto_gps:punto_gps(latitud, longitud, precision, altitud, creado_en),
       cama!inner(
         id_cama,
         nombre,
