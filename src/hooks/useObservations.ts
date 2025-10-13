@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import { captureCurrentLocation } from '@/lib/gpsCapture'
+import { playTileTone } from '@/lib/tileAudio'
 import { loadObservaciones, saveObservacionesArray } from '@/lib/observationStorage'
 import { formatDateGroupInRecordedTimezone } from '@/lib/gpsTimezone'
 import { OBSERVATION_CONFIG, ALL_OBSERVATION_FIELDS, UseObservationsReturn } from '@/types'
+
+const SENSOR_FIELDS = new Set(['conductividad_suelo', 'humedad', 'temperatura_suelo'])
 
 // Calculate total number of fields in observation array
 const TOTAL_FIELD_COUNT = OBSERVATION_CONFIG.location.length + OBSERVATION_CONFIG.status.length
@@ -113,35 +116,54 @@ export function useObservations(userId: string): UseObservationsReturn {
                 updatedObservacion[1] &&
                 updatedObservacion[2]
 
-            if (isStatusField && isLocationComplete) {
-                // Capture GPS and save asynchronously (outside of setState)
+            const fieldName = ALL_OBSERVATION_FIELDS[i]
+
+            if (isStatusField && isLocationComplete && fieldName) {
+                const recordedAt = new Date().toISOString()
+                const locationTuple = updatedObservacion.slice(0, OBSERVATION_CONFIG.location.length) as [string, string, string]
+                const displayDate = formatDateGroupInRecordedTimezone(recordedAt, undefined)
+                const isSensorField = SENSOR_FIELDS.has(fieldName)
+                const sumMode: 'estados' | 'sensores' = isSensorField ? 'sensores' : 'estados'
+                const previousSum = getSum(i, locationTuple, displayDate, sumMode)
+                const numericVal = parseFloat(val)
+                const delta = Number.isNaN(numericVal) ? 0 : numericVal
+                const newSum = isSensorField ? delta : previousSum + delta
+
+                if (newSum !== previousSum) {
+                    playTileTone(fieldName)
+                }
+                const baseObservation = [
+                    userId,     // index 0
+                    recordedAt,  // index 1
+                    '',         // index 2 placeholder for GPS
+                    ...updatedObservacion.slice(0, OBSERVATION_CONFIG.location.length),
+                    '', '', '', '', '', '', '', ''
+                ]
+                baseObservation[i + 3] = val
+
+                let newIndex = -1
+                setObservaciones(prevObs => {
+                    const next = [...prevObs]
+                    newIndex = next.length
+                    next.push(baseObservation)
+                    return next
+                })
+
                 captureCurrentLocation()
                     .then(gpsCoords => {
-                        // Build the observation record to save
-                        // New structure: [userId, fecha, gps, finca, bloque, cama, arroz, arveja, garbanzo, color, abierto, conductividad_suelo, humedad, temperatura_suelo]
-                        const timestamp = new Date().toISOString()
-                        const gpsJson = gpsCoords ? JSON.stringify(gpsCoords) : ''
-
-                        const toSave = [
-                            userId,     // index 0
-                            timestamp,  // index 1
-                            gpsJson,    // index 2
-                            ...updatedObservacion.slice(0, OBSERVATION_CONFIG.location.length),  // indices 3-5: finca, bloque, cama
-                            '', '', '', '', '', '', '', ''  // indices 6-13: empty placeholders for 8 status fields
-                        ]
-
-                        // Set the specific status field that was entered
-                        // Status fields start at index 6 in storage, UI index starts at 3 (after location)
-                        toSave[i + 3] = val  // +3 offset for userId, fecha, gps
-
-                        console.log('Saving observation:', toSave)
-
-                        // Add to observations array (triggers localStorage save via useEffect)
-                        setObservaciones(prevObs => [...prevObs, toSave])
+                        if (!gpsCoords) return
+                        const gpsJson = JSON.stringify(gpsCoords)
+                        setObservaciones(prevObs => {
+                            if (newIndex < 0 || newIndex >= prevObs.length) return prevObs
+                            const next = [...prevObs]
+                            const updated = [...next[newIndex]]
+                            updated[2] = gpsJson
+                            next[newIndex] = updated
+                            return next
+                        })
                     })
                     .catch(error => {
-                        console.error('Error capturing GPS or saving observation:', error)
-                        // TODO: Show user-facing error message
+                        console.error('Error capturing GPS:', error)
                     })
             }
 
