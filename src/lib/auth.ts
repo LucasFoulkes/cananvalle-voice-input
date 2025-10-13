@@ -38,10 +38,6 @@ export function hasRole(allowedRoles: string[]): boolean {
   return allowedRoles.includes(user.rol)
 }
 
-export function isControlCalidad(): boolean {
-  return hasRole(['control de calidad', 'sudo'])
-}
-
 export function isSudo(): boolean {
   return hasRole(['sudo'])
 }

@@ -111,3 +111,56 @@ export async function syncObservationToSupabase(observation: Observation) {
   if (obsError) throw obsError
   return obsData.id_observacion
 }
+
+/**
+ * Fetch all observations for a single day
+ * @param date - Date object or ISO string for the day to fetch
+ * @returns Array of observations with related data (cama, bloque, finca, GPS, usuario)
+ */
+export async function getObservationsForDay(date: Date | string) {
+  // Convert date to start and end of day in ISO format
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  const startOfDay = new Date(dateObj)
+  startOfDay.setHours(0, 0, 0, 0)
+  const endOfDay = new Date(dateObj)
+  endOfDay.setHours(23, 59, 59, 999)
+
+  const { data, error } = await supabase
+    .from('observacion')
+    .select(`
+      id_observacion,
+      id_usuario,
+      tipo_observacion,
+      cantidad,
+      creado_en,
+      usuario:id_usuario(
+        id_usuario,
+        nombres,
+        apellidos
+      ),
+      cama!inner(
+        id_cama,
+        nombre,
+        grupo_cama!inner(
+          bloque!inner(
+            id_finca,
+            nombre
+          )
+        )
+      ),
+      punto_gps:id_punto_gps(
+        id,
+        latitud,
+        longitud,
+        precision,
+        altitud,
+        creado_en
+      )
+    `)
+    .gte('creado_en', startOfDay.toISOString())
+    .lte('creado_en', endOfDay.toISOString())
+    .order('creado_en', { ascending: true })
+
+  if (error) throw error
+  return data
+}
