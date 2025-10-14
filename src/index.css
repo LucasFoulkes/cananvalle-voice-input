@@ -119,15 +119,21 @@
   body {
     @apply bg-background text-foreground;
     overflow: hidden;
-    height: 100%;
-    width: 100%;
-    position: fixed;
+    height: 100vh;
+    height: 100dvh;
+    /* Dynamic viewport height for mobile */
+    width: 100vw;
+    margin: 0;
+    padding: 0;
     overscroll-behavior: none;
+    touch-action: pan-y;
   }
 
   #root {
     height: 100%;
     width: 100%;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 }
