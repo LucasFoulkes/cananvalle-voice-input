@@ -51,9 +51,9 @@ function ControlCalidadComponent() {
   }
 
   return (
-    <div className='p-1 h-full'>
-      <div className='flex bg-zinc-800 flex-col h-full rounded-xl p-1 gap-1'>
-        <div className='flex justify-between p-1'>
+    <div className='p-1 h-full overflow-hidden'>
+      <div className='flex bg-zinc-800 flex-col h-full rounded-xl p-1 gap-1 overflow-hidden'>
+        <div className='flex justify-between p-1 flex-shrink-0'>
           <Button className='aspect-square' onClick={goBackOneDay}>
             <ChevronLeft />
           </Button>
@@ -79,7 +79,7 @@ function ControlCalidadComponent() {
           </div>
         )}
         {!loading && !error && (
-          <div className='space-y-4'>
+          <div className='space-y-4 overflow-y-auto min-h-0 px-1'>
             {userCards.map((userData) => (
               <UserQualityCard key={userData.userId} data={userData} />
             ))}

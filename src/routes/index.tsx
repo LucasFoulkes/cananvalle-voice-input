@@ -94,7 +94,7 @@ function ObservationRecorderRoute() {
     }
 
     return (
-        <div className="flex flex-col w-full h-full p-1 gap-1">
+        <div className="flex flex-col w-full h-full p-1 gap-1 overflow-hidden bg-black">
             {/* Mode Selection Screen */}
             {mode === 'select' && (
                 <div className="flex flex-col w-full h-full gap-1 justify-center">
@@ -122,13 +122,13 @@ function ObservationRecorderRoute() {
                         onClick={handleBack}
                         variant="default"
                         size="icon"
-                        className="h-16 w-16"
+                        className="h-16 w-16 flex-shrink-0"
                     >
                         <ChevronLeft className="size-full" strokeWidth={1} />
                     </Button>
 
                     {/* Observation Buttons Grid */}
-                    <div className="grid grid-cols-3 w-full gap-1">
+                    <div className="grid grid-cols-3 w-full gap-1 flex-shrink-0">
                         {visibleItems.map((item) => {
                             // Calculate the actual index in the full items array
                             const actualIndex = items.indexOf(item)
@@ -145,7 +145,7 @@ function ObservationRecorderRoute() {
 
                     {/* Microphone Button */}
                     <div
-                        className={`h-full ${getBgColor()} rounded-xl cursor-pointer transition-colors overflow-hidden`}
+                        className={`flex-1 min-h-0 ${getBgColor()} rounded-xl cursor-pointer transition-colors overflow-hidden`}
                         onClick={handleMicClick}
                     >
                         {!isInitializing && !isListening && (

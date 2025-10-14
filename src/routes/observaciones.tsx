@@ -268,28 +268,30 @@ function Observaciones() {
   const hasObservations = Object.keys(groupedByType).length > 0
 
   return (
-    <div className="flex flex-col w-full h-full p-1 gap-1">
+    <div className="flex flex-col w-full h-full p-1 gap-1 overflow-hidden bg-black">
       {!hasObservations ? (
         <div className="flex items-center justify-center h-full">
           <p className="text-center text-zinc-400 text-lg">No hay observaciones</p>
         </div>
       ) : (
-        Object.entries(groupedByType).map(([date, locationGroups]: [string, any]) => (
-          <div key={date} className="gap-1 flex flex-col">
-            <h2 className="text-xl text-center capitalize">{formatDisplayDate(date)}</h2>
-            {Object.entries(locationGroups).map(([locationKey, obsArr]: [string, any]) => (
-              <LocationCard
-                key={locationKey}
-                locationKey={locationKey}
-                obsArr={obsArr}
-                date={date}
-                getSum={getSum}
-                syncProps={syncProps}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
-        ))
+        <div className="flex flex-col gap-1 overflow-y-auto h-full pb-2">
+          {Object.entries(groupedByType).map(([date, locationGroups]: [string, any]) => (
+            <div key={date} className="gap-1 flex flex-col flex-shrink-0">
+              <h2 className="text-xl text-center capitalize">{formatDisplayDate(date)}</h2>
+              {Object.entries(locationGroups).map(([locationKey, obsArr]: [string, any]) => (
+                <LocationCard
+                  key={locationKey}
+                  locationKey={locationKey}
+                  obsArr={obsArr}
+                  date={date}
+                  getSum={getSum}
+                  syncProps={syncProps}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )
