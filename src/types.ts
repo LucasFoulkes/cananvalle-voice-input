@@ -12,16 +12,38 @@ export const ALL_OBSERVATION_FIELDS = [
 ] as const
 
 // ============================================
+// PINCHE FIELD CONFIGURATION
+// ============================================
+export const PINCHE_CONFIG = {
+    location: ['finca', 'bloque', 'cama'] as const,
+    tipos: ['apertura', 'programado', 'sanitario'] as const,
+} as const
+
+export const ALL_PINCHE_FIELDS = [
+    ...PINCHE_CONFIG.location,
+    ...PINCHE_CONFIG.tipos
+] as const
+
+// ============================================
 // TYPES
 // ============================================
 
 // -------- User Types --------
+export type UserRole =
+    | 'sudo'                          // Full system access
+    | 'control_calidad'               // Quality control - same as sudo
+    | 'jefe_finca'                    // Farm manager - sees everything
+    | 'supervisor_estados_fenologicos' // Only estados fenológicos
+    | 'supervisor_sensores'            // Only sensores
+    | 'supervisor_pinches'             // Only pinches
+    | 'operario'                       // Basic worker - records only
+
 export type Usuario = {
     id_usuario: number
     nombres: string
     apellidos: string | null
     cedula: string | null
-    rol: string
+    rol: UserRole
     pin: string
     nombre_usuario?: string | null
     creado_en?: string
@@ -31,7 +53,7 @@ export type CreateUsuarioInput = {
     nombres: string
     apellidos?: string
     cedula?: string
-    rol: 'conteos' | 'control_de_calidad'
+    rol: UserRole
     pin: string
 }
 
@@ -72,9 +94,9 @@ export type GpsPoint = {
 // -------- Observation Types --------
 export type Observation = {
     fecha: string
-    finca: string
-    bloque: string
-    cama: string
+    finca: string  // Finca ID (e.g., "1" for finca with id_finca=1), not name
+    bloque: string  // Bloque name (e.g., "A")
+    cama: string  // Cama name (e.g., "1")
     estado: string
     cantidad: number
     gps?: GpsLocation
@@ -98,8 +120,30 @@ export type ObservationCommand = {
 export type ProcessCommandOptions = {
     items: string[]
     onSave: (index: number, value: string) => void
-    mode?: 'estados' | 'sensores'
+    mode?: 'estados' | 'sensores' | 'pinches'
 }
+
+// -------- Pinche Types --------
+export type Pinche = {
+    fecha: string
+    finca: string  // Finca ID (e.g., "1" for finca with id_finca=1), not name
+    bloque: string  // Bloque name (e.g., "A")
+    cama: string  // Cama name (e.g., "1")
+    variedad?: string  // Optional
+    tipo: 'pinche_apertura' | 'pinche_programado' | 'pinche_sanitario'
+    cantidad: number
+    gps?: GpsLocation  // For timezone only, not synced to DB
+    userId?: number | null  // For quality control only, not synced to DB
+    syncStatus?: 'pending' | 'success' | 'error'
+    pincheId?: number
+}
+
+export type PincheWithMeta = Pinche & {
+    originalArr?: any[]
+    globalIndex?: number
+}
+
+export type GroupedPinches = Record<string, Record<string, PincheWithMeta[]>>
 
 // -------- Timeline Types --------
 export type CamaTimelineSegment = {
@@ -135,6 +179,19 @@ export interface UseObservationsReturn {
     // Actions
     save: (index: number, value: string) => Promise<void>
     getSum: (obsIndex: number, location: [string, string, string], date: string, mode?: 'estados' | 'sensores') => number
+}
+
+export interface UsePinchesReturn {
+    // Current pinche being entered
+    pinche: string[]
+    // All saved pinches
+    pinches: string[][]
+    // Field configuration
+    items: readonly string[]
+    locationFieldCount: number
+    // Actions
+    save: (index: number, value: string) => Promise<void>
+    getSum: (pincheIndex: number, location: [string, string, string], date: string) => number
 }
 
 export type UseVoskOptions = {

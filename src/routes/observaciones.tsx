@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Upload, Trash2, Loader2, Check, Dot } from 'lucide-react'
@@ -7,8 +7,14 @@ import { useObservations } from '@/hooks/useObservations'
 import { useObservacionData } from '@/hooks/useObservacionData'
 import { useObservacionSync } from '@/hooks/useObservacionSync'
 import { formatTimeInRecordedTimezone } from '@/lib/gpsTimezone'
+import { canViewObservaciones, hasRole } from '@/lib/auth'
 
 export const Route = createFileRoute('/observaciones')({
+  beforeLoad: () => {
+    if (!canViewObservaciones()) {
+      throw redirect({ to: '/' })
+    }
+  },
   component: Observaciones,
 })
 
@@ -213,6 +219,8 @@ function Observaciones() {
   const { getSum } = useObservations('summary')
   const { grouped } = useObservacionData()
   const syncProps = useObservacionSync()
+  const canSeeEstados = hasRole(['sudo', 'control_calidad', 'jefe_finca', 'supervisor_estados_fenologicos'])
+  const canSeeSensores = hasRole(['sudo', 'control_calidad', 'jefe_finca', 'supervisor_sensores'])
 
   const handleDelete = (observations: any[]) => {
     const raw = loadObservaciones()
@@ -264,8 +272,44 @@ function Observaciones() {
 
   const groupedByType = regroupByType(grouped)
 
-  // Check if there are no observations
-  const hasObservations = Object.keys(groupedByType).length > 0
+  const dateSections = Object.entries(groupedByType)
+    .map(([date, locationGroups]: [string, any]) => {
+      const locationCards = Object.entries(locationGroups)
+        .map(([locationKey, obsArr]: [string, any]) => {
+          const { tipo } = parseLocation(locationKey)
+          const observationType = (tipo === 'sensor' || tipo === 'estado')
+            ? (tipo as 'sensor' | 'estado')
+            : getObservationType(obsArr[0])
+
+          if (observationType === 'estado' && !canSeeEstados) return null
+          if (observationType === 'sensor' && !canSeeSensores) return null
+
+          return (
+            <LocationCard
+              key={locationKey}
+              locationKey={locationKey}
+              obsArr={obsArr}
+              date={date}
+              getSum={getSum}
+              syncProps={syncProps}
+              onDelete={handleDelete}
+            />
+          )
+        })
+        .filter(Boolean)
+
+      if (locationCards.length === 0) return null
+
+      return (
+        <div key={date} className="gap-1 flex flex-col flex-shrink-0">
+          <h2 className="text-xl text-center capitalize">{formatDisplayDate(date)}</h2>
+          {locationCards}
+        </div>
+      )
+    })
+    .filter(Boolean)
+
+  const hasObservations = dateSections.length > 0
 
   return (
     <div className="flex flex-col w-full h-full p-1 gap-1 overflow-hidden bg-black">
@@ -275,22 +319,7 @@ function Observaciones() {
         </div>
       ) : (
         <div className="flex flex-col gap-1 overflow-y-auto h-full pb-2">
-          {Object.entries(groupedByType).map(([date, locationGroups]: [string, any]) => (
-            <div key={date} className="gap-1 flex flex-col flex-shrink-0">
-              <h2 className="text-xl text-center capitalize">{formatDisplayDate(date)}</h2>
-              {Object.entries(locationGroups).map(([locationKey, obsArr]: [string, any]) => (
-                <LocationCard
-                  key={locationKey}
-                  locationKey={locationKey}
-                  obsArr={obsArr}
-                  date={date}
-                  getSum={getSum}
-                  syncProps={syncProps}
-                  onDelete={handleDelete}
-                />
-              ))}
-            </div>
-          ))}
+          {dateSections}
         </div>
       )}
     </div>

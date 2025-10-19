@@ -1,8 +1,8 @@
 import { Outlet, createRootRoute, useNavigate, useLocation, redirect } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Link } from "@tanstack/react-router";
-import { Pencil, ClipboardList, LogOut, ShieldCheck } from 'lucide-react'
-import { logout, isAuthenticated } from '@/lib/auth'
+import { Pencil, ClipboardList, LogOut, ShieldCheck, Scissors } from 'lucide-react'
+import { logout, isAuthenticated, canViewObservaciones, canViewPinches, canViewQualityControl } from '@/lib/auth'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog'
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt'
 import { useWakeLock } from '@/hooks/useWakeLock'
@@ -38,10 +38,11 @@ function RootComponent() {
 
 
   const navItems = [
-    { to: '/', Icon: Pencil },
-    { to: '/observaciones', Icon: ClipboardList },
-    { to: '/control-calidad', Icon: ShieldCheck }
-  ]
+    { to: '/', Icon: Pencil, show: true },
+    { to: '/observaciones', Icon: ClipboardList, show: canViewObservaciones() },
+    { to: '/pinches', Icon: Scissors, show: canViewPinches() },
+    { to: '/control-calidad', Icon: ShieldCheck, show: canViewQualityControl() }
+  ].filter(item => item.show)
 
   return (
     <div className='h-screen grid grid-rows-[1fr_auto] bg-black text-white overflow-hidden'>

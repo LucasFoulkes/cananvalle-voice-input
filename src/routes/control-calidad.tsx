@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { addDays, isToday, isFuture, format } from 'date-fns'
@@ -8,8 +8,14 @@ import { getObservationsForDay } from '@/services/supabaseService'
 import { Spinner } from '@/components/ui/spinner'
 import { useQualityControlData } from '@/hooks/useQualityControlData'
 import { UserQualityCard } from '@/components/UserQualityCard'
+import { canViewQualityControl, hasRole } from '@/lib/auth'
 
 export const Route = createFileRoute('/control-calidad')({
+  beforeLoad: () => {
+    if (!canViewQualityControl()) {
+      throw redirect({ to: '/' })
+    }
+  },
   component: ControlCalidadComponent,
 })
 
@@ -20,6 +26,27 @@ function ControlCalidadComponent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const canSeeEverything = hasRole(['sudo', 'control_calidad', 'jefe_finca'])
+  const canSeeEstadosOnly = hasRole(['supervisor_estados_fenologicos'])
+  const canSeeSensoresOnly = hasRole(['supervisor_sensores'])
+  const canSeePinchesOnly = hasRole(['supervisor_pinches'])
+
+  const filterObservationsByRole = (data: any[]): any[] => {
+    if (canSeeEverything) return data
+    if (canSeeEstadosOnly) {
+      const estadosSet = new Set(['arroz', 'arveja', 'garbanzo', 'color', 'abierto', 'rayando_color', 'sepalos_abiertos'])
+      return data.filter(item => estadosSet.has(item.tipo_observacion))
+    }
+    if (canSeeSensoresOnly) {
+      const sensorSet = new Set(['conductividad_suelo', 'humedad', 'temperatura_suelo'])
+      return data.filter(item => sensorSet.has(item.tipo_observacion))
+    }
+    if (canSeePinchesOnly) {
+      return []
+    }
+    return []
+  }
+
   const userCards = useQualityControlData(observations)
 
   useEffect(() => {
@@ -28,7 +55,8 @@ function ControlCalidadComponent() {
       setError(null)
       try {
         const data = await getObservationsForDay(selectedDate)
-        setObservations(data)
+        const filtered = filterObservationsByRole(data)
+        setObservations(filtered)
       } catch (err: any) {
         console.error('Error fetching observations:', err)
         setError(err.message || 'Error al cargar observaciones')

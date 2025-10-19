@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PinchesRouteImport } from './routes/pinches'
 import { Route as ObservacionesRouteImport } from './routes/observaciones'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ControlCalidadRouteImport } from './routes/control-calidad'
 import { Route as IndexRouteImport } from './routes/index'
 
+const PinchesRoute = PinchesRouteImport.update({
+  id: '/pinches',
+  path: '/pinches',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ObservacionesRoute = ObservacionesRouteImport.update({
   id: '/observaciones',
   path: '/observaciones',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/control-calidad': typeof ControlCalidadRoute
   '/login': typeof LoginRoute
   '/observaciones': typeof ObservacionesRoute
+  '/pinches': typeof PinchesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/control-calidad': typeof ControlCalidadRoute
   '/login': typeof LoginRoute
   '/observaciones': typeof ObservacionesRoute
+  '/pinches': typeof PinchesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,20 @@ export interface FileRoutesById {
   '/control-calidad': typeof ControlCalidadRoute
   '/login': typeof LoginRoute
   '/observaciones': typeof ObservacionesRoute
+  '/pinches': typeof PinchesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/control-calidad' | '/login' | '/observaciones'
+  fullPaths: '/' | '/control-calidad' | '/login' | '/observaciones' | '/pinches'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/control-calidad' | '/login' | '/observaciones'
-  id: '__root__' | '/' | '/control-calidad' | '/login' | '/observaciones'
+  to: '/' | '/control-calidad' | '/login' | '/observaciones' | '/pinches'
+  id:
+    | '__root__'
+    | '/'
+    | '/control-calidad'
+    | '/login'
+    | '/observaciones'
+    | '/pinches'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,10 +82,18 @@ export interface RootRouteChildren {
   ControlCalidadRoute: typeof ControlCalidadRoute
   LoginRoute: typeof LoginRoute
   ObservacionesRoute: typeof ObservacionesRoute
+  PinchesRoute: typeof PinchesRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pinches': {
+      id: '/pinches'
+      path: '/pinches'
+      fullPath: '/pinches'
+      preLoaderRoute: typeof PinchesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/observaciones': {
       id: '/observaciones'
       path: '/observaciones'
@@ -107,6 +130,7 @@ const rootRouteChildren: RootRouteChildren = {
   ControlCalidadRoute: ControlCalidadRoute,
   LoginRoute: LoginRoute,
   ObservacionesRoute: ObservacionesRoute,
+  PinchesRoute: PinchesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

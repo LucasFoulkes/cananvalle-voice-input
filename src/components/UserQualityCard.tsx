@@ -11,7 +11,7 @@ interface UserQualityCardProps {
 }
 
 export function UserQualityCard({ data }: UserQualityCardProps) {
-    const { usuario, observations, camaData, dayStart, totalMs } = data
+    const { usuario, observations, camaData, dayStart, totalMs, totalTallos } = data
 
     return (
         <div className='bg-zinc-800 p-3 rounded-lg'>
@@ -72,14 +72,22 @@ export function UserQualityCard({ data }: UserQualityCardProps) {
                                                     const endTime = new Date(sorted[sorted.length - 1].creado_en).getTime()
                                                     const durationMin = Math.round((endTime - startTime) / 60000)
 
+                                                    // Calculate total tallos for this cama
+                                                    const camaTallos = sorted.reduce((sum: number, o: any) =>
+                                                        sum + (parseInt(o.cantidad) || 0), 0
+                                                    )
+                                                    const tallosPorMin = durationMin > 0 ? (camaTallos / durationMin).toFixed(1) : '0'
+
                                                     return (
                                                         <Dialog key={cama}>
                                                             <DialogTrigger asChild>
-                                                                <div className='flex gap-4 text-sm bg-zinc-800 p-3 rounded-lg hover:bg-zinc-700 cursor-pointer transition-colors border border-zinc-700'>
+                                                                <div className='flex flex-wrap gap-x-4 gap-y-1 text-sm bg-zinc-800 p-3 rounded-lg hover:bg-zinc-700 cursor-pointer transition-colors border border-zinc-700'>
                                                                     <span className='text-zinc-400'>Cama {cama}:</span>
-                                                                    <span className='text-white'>{obs.length} obs</span>
-                                                                    <span className='text-zinc-400'>|</span>
                                                                     <span className='text-white'>{durationMin}m</span>
+                                                                    <span className='text-zinc-400'>|</span>
+                                                                    <span className='text-white'>{camaTallos} tallos</span>
+                                                                    <span className='text-zinc-400'>|</span>
+                                                                    <span className='text-white'>{tallosPorMin} t/min</span>
                                                                 </div>
                                                             </DialogTrigger>
                                                             <DialogContent className='max-w-[calc(100vw-1rem)] w-full sm:max-w-xl max-h-[calc(100vh-2rem)] overflow-auto bg-zinc-900 text-white border-zinc-700'>
@@ -143,22 +151,49 @@ export function UserQualityCard({ data }: UserQualityCardProps) {
             </div>
 
             {/* Metrics */}
-            <div className='flex gap-6 mt-3'>
+            <div className='flex flex-wrap gap-x-6 gap-y-2 mt-3'>
                 <div className='text-sm'>
-                    <span className='text-zinc-400'>Obs/cama: </span>
+                    <span className='text-zinc-400'>Tallos: </span>
                     <span className='text-white font-semibold'>
-                        {(observations.length / camaData.length).toFixed(1)}
+                        {totalTallos}
+                    </span>
+                </div>
+                <div className='text-sm'>
+                    <span className='text-zinc-400'>Tallos/min: </span>
+                    <span className='text-white font-semibold'>
+                        {(() => {
+                            // Calculate tallos per minute for each cama
+                            const tallosPorMinArray = camaData.map(cama => {
+                                const durationMin = (cama.end - cama.start) / 60000
+                                return durationMin > 0 ? cama.totalTallos / durationMin : 0
+                            }).sort((a, b) => a - b)
+
+                            // Calculate median
+                            const mid = Math.floor(tallosPorMinArray.length / 2)
+                            const median = tallosPorMinArray.length % 2 === 0
+                                ? (tallosPorMinArray[mid - 1] + tallosPorMinArray[mid]) / 2
+                                : tallosPorMinArray[mid]
+
+                            return median.toFixed(1)
+                        })()}
                     </span>
                 </div>
                 <div className='text-sm'>
                     <span className='text-zinc-400'>Tiempo/cama: </span>
                     <span className='text-white font-semibold'>
                         {(() => {
-                            const totalTime = camaData.reduce((sum, cama) =>
-                                sum + (cama.end - cama.start), 0
-                            )
-                            const avgMin = Math.round(totalTime / camaData.length / 60000)
-                            return `${avgMin}m`
+                            // Calculate duration for each cama in minutes
+                            const durationsMin = camaData.map(cama =>
+                                (cama.end - cama.start) / 60000
+                            ).sort((a, b) => a - b)
+
+                            // Calculate median
+                            const mid = Math.floor(durationsMin.length / 2)
+                            const medianMin = durationsMin.length % 2 === 0
+                                ? (durationsMin[mid - 1] + durationsMin[mid]) / 2
+                                : durationsMin[mid]
+
+                            return `${Math.round(medianMin)}m`
                         })()}
                     </span>
                 </div>

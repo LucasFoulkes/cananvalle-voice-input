@@ -7,6 +7,8 @@ const ESTADO_COMMANDS = ['arroz', 'arveja', 'garbanzo', 'color', 'abierto']
 
 const SENSOR_COMMANDS = ['conductividad', 'humedad', 'temperatura']
 
+const PINCHE_COMMANDS = ['apertura', 'programado', 'sanitario']
+
 const COMMAND_ALIASES: Record<string, string> = {
     'conductividad': 'conductividad_suelo',
     'temperatura': 'temperatura_suelo',
@@ -26,10 +28,12 @@ export function processObservationCommand(text: string, options: ProcessCommandO
             const isLocationCommand = LOCATION_COMMANDS.includes(command)
             const isEstadoCommand = ESTADO_COMMANDS.includes(command)
             const isSensorCommand = SENSOR_COMMANDS.includes(command)
+            const isPincheCommand = PINCHE_COMMANDS.includes(command)
 
             const isValidCommand = isLocationCommand ||
                 (mode === 'estados' && isEstadoCommand) ||
                 (mode === 'sensores' && isSensorCommand) ||
+                (mode === 'pinches' && isPincheCommand) ||
                 (!mode)  // No mode filter when mode is undefined
 
             if (isValidCommand) {

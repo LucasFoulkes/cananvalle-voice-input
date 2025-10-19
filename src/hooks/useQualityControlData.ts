@@ -5,6 +5,7 @@ export interface CamaTimeRange {
     start: number
     end: number
     count: number
+    totalTallos: number
 }
 
 export interface UserQualityData {
@@ -15,6 +16,7 @@ export interface UserQualityData {
     dayStart: number
     dayEnd: number
     totalMs: number
+    totalTallos: number
 }
 
 export function useQualityControlData(observations: any[]): UserQualityData[] {
@@ -52,11 +54,16 @@ export function useQualityControlData(observations: any[]): UserQualityData[] {
                 const sorted = cama.observations.sort((a: any, b: any) =>
                     new Date(a.creado_en).getTime() - new Date(b.creado_en).getTime()
                 )
+                // Calculate total tallos (sum of all cantidad values)
+                const totalTallos = sorted.reduce((sum: number, obs: any) =>
+                    sum + (parseInt(obs.cantidad) || 0), 0
+                )
                 return {
                     label: cama.label,
                     start: new Date(sorted[0].creado_en).getTime(),
                     end: new Date(sorted[sorted.length - 1].creado_en).getTime(),
-                    count: sorted.length
+                    count: sorted.length,
+                    totalTallos
                 }
             })
 
@@ -68,6 +75,9 @@ export function useQualityControlData(observations: any[]): UserQualityData[] {
             const dayEnd = Math.max(...camaData.map(c => c.end))
             const totalMs = dayEnd - dayStart
 
+            // Calculate total tallos across all camas
+            const totalTallos = camaData.reduce((sum, cama) => sum + cama.totalTallos, 0)
+
             return {
                 userId,
                 usuario: data.usuario,
@@ -75,7 +85,8 @@ export function useQualityControlData(observations: any[]): UserQualityData[] {
                 camaData,
                 dayStart,
                 dayEnd,
-                totalMs
+                totalMs,
+                totalTallos
             }
         })
     }, [observations])

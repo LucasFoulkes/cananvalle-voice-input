@@ -1,14 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { TileButton } from '@/components/TileButton'
 import { Mic, ChevronLeft } from 'lucide-react'
 import { useVosk } from '@/hooks/useVosk'
 import { useObservations } from '@/hooks/useObservations'
+import { usePinches } from '@/hooks/usePinches'
 import { Spinner } from '@/components/ui/spinner'
 import { AudioVisualizer } from '@/components/AudioVisualizer'
 import { Button } from '@/components/ui/button'
 import { processObservationCommand } from '@/lib/Command'
-import { getCurrentUser } from '@/lib/auth'
+import { getCurrentUser, canAccessEstados, canAccessSensores, canAccessPinches } from '@/lib/auth'
 import { formatDateGroupInRecordedTimezone } from '@/lib/gpsTimezone'
 
 export const Route = createFileRoute('/')({
@@ -20,10 +21,38 @@ function ObservationRecorderRoute() {
     const userId = currentUser?.id_usuario.toString() || ''
 
     // Mode selection state
-    const [mode, setMode] = useState<'select' | 'estados' | 'sensores'>('select')
+    const [mode, setMode] = useState<'select' | 'estados' | 'sensores' | 'pinches'>('select')
 
     // Observation state and logic
-    const { observacion, items, locationFieldCount, save, getSum } = useObservations(userId)
+    const observationHook = useObservations(userId)
+    const pincheHook = usePinches(userId)
+
+    const modeOptions = useMemo(() => (
+        [
+            { mode: 'estados' as const, label: 'Estados Fenológicos', enabled: canAccessEstados() },
+            { mode: 'sensores' as const, label: 'Sensores', enabled: canAccessSensores() },
+            { mode: 'pinches' as const, label: 'Pinches', enabled: canAccessPinches() }
+        ].filter(option => option.enabled)
+    ), [currentUser?.rol])
+
+    useEffect(() => {
+        if (mode === 'select' && modeOptions.length === 1) {
+            setMode(modeOptions[0].mode)
+        }
+    }, [mode, modeOptions])
+
+    useEffect(() => {
+        if (mode !== 'select') {
+            const stillAvailable = modeOptions.some(option => option.mode === mode)
+            if (!stillAvailable) {
+                setMode('select')
+            }
+        }
+    }, [mode, modeOptions])
+
+    // Use the appropriate hook based on mode
+    const activeHook = mode === 'pinches' ? pincheHook : observationHook
+    const { items, locationFieldCount, save } = activeHook
 
     // Get today's date for filtering observations
     const today = formatDateGroupInRecordedTimezone(new Date().toISOString(), undefined)
@@ -52,14 +81,19 @@ function ObservationRecorderRoute() {
     }
 
     // Get current location for sum calculations
-    const currentLocation = observacion.slice(0, 3) as [string, string, string]
+    const currentLocation = mode === 'pinches'
+        ? (pincheHook.pinche.slice(0, 3) as [string, string, string])
+        : (observationHook.observacion.slice(0, 3) as [string, string, string])
 
     // Helper function to get readable label for field
     const getFieldLabel = (item: string): string => {
         const labelMap: Record<string, string> = {
             'conductividad_suelo': 'Conductividad',
             'humedad': 'Humedad',
-            'temperatura_suelo': 'Temperatura'
+            'temperatura_suelo': 'Temperatura',
+            'apertura': 'Apertura',
+            'programado': 'Programado',
+            'sanitario': 'Sanitario'
         }
         return labelMap[item] || item
     }
@@ -68,7 +102,12 @@ function ObservationRecorderRoute() {
     const getVisibleItems = () => {
         if (mode === 'select') return []
 
-        // Always show location fields (first 3)
+        if (mode === 'pinches') {
+            // For pinches: show bloque, cama, and all 3 tipos
+            return items // All fields (bloque, cama, apertura, programado, sanitario)
+        }
+
+        // Always show location fields (first 3 for observations)
         const locationItems = items.slice(0, locationFieldCount)
 
         if (mode === 'estados') {
@@ -86,7 +125,9 @@ function ObservationRecorderRoute() {
 
     // Handle back button - reset to mode selection
     const handleBack = () => {
-        setMode('select')
+        if (modeOptions.length > 1) {
+            setMode('select')
+        }
         // Reset location fields
         for (let i = 0; i < locationFieldCount; i++) {
             save(i, '')
@@ -98,45 +139,77 @@ function ObservationRecorderRoute() {
             {/* Mode Selection Screen */}
             {mode === 'select' && (
                 <div className="flex flex-col w-full h-full gap-1 justify-center">
-                    {[
-                        { mode: 'estados', label: 'Estados Fenológicos' },
-                        { mode: 'sensores', label: 'Sensores' }
-                    ].map(({ mode, label }) => (
-                        <Button
-                            key={mode}
-                            onClick={() => setMode(mode as 'estados' | 'sensores')}
-                            className="h-32 text-4xl font-thin"
-                            variant="default"
-                        >
-                            {label}
-                        </Button>
-                    ))}
+                    {modeOptions.length === 0 ? (
+                        <div className="text-center text-zinc-400 text-lg px-4">
+                            No tienes permisos para registrar información.
+                        </div>
+                    ) : (
+                        modeOptions.map(({ mode: m, label }) => (
+                            <Button
+                                key={m}
+                                onClick={() => setMode(m as 'estados' | 'sensores' | 'pinches')}
+                                className="h-32 text-4xl font-thin"
+                                variant="default"
+                            >
+                                {label}
+                            </Button>
+                        ))
+                    )}
                 </div>
             )}
 
-            {/* Observation Grid (Estados or Sensores) */}
+            {/* Observation/Pinche Grid (Estados, Sensores, or Pinches) */}
             {mode !== 'select' && (
                 <>
                     {/* Back Button */}
-                    <Button
-                        onClick={handleBack}
-                        variant="default"
-                        size="icon"
-                        className="h-16 w-16 flex-shrink-0"
-                    >
-                        <ChevronLeft className="size-full" strokeWidth={1} />
-                    </Button>
+                    {modeOptions.length > 1 && (
+                        <Button
+                            onClick={handleBack}
+                            variant="default"
+                            size="icon"
+                            className="h-16 w-16 flex-shrink-0"
+                        >
+                            <ChevronLeft className="size-full" strokeWidth={1} />
+                        </Button>
+                    )}
 
                     {/* Observation Buttons Grid */}
                     <div className="grid grid-cols-3 w-full gap-1 flex-shrink-0">
                         {visibleItems.map((item) => {
                             // Calculate the actual index in the full items array
                             const actualIndex = items.indexOf(item)
+
+                            // Get display value based on mode
+                            let displayValue: string
+
+                            if (actualIndex >= locationFieldCount) {
+                                // It's a tipo/status field - show sum
+                                if (mode === 'pinches') {
+                                    displayValue = pincheHook.getSum(
+                                        actualIndex,
+                                        currentLocation as [string, string, string],
+                                        today
+                                    ).toString()
+                                } else {
+                                    displayValue = observationHook.getSum(
+                                        actualIndex,
+                                        currentLocation as [string, string, string],
+                                        today,
+                                        mode
+                                    ).toString()
+                                }
+                            } else {
+                                // It's a location field - show current value
+                                displayValue = mode === 'pinches'
+                                    ? pincheHook.pinche[actualIndex]
+                                    : observationHook.observacion[actualIndex]
+                            }
+
                             return (
                                 <TileButton
                                     key={actualIndex}
                                     label={getFieldLabel(item)}
-                                    value={actualIndex >= locationFieldCount ? getSum(actualIndex, currentLocation, today, mode).toString() : observacion[actualIndex]}
+                                    value={displayValue}
                                     onSave={(val) => save(actualIndex, val)}
                                 />
                             )
