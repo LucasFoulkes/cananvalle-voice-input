@@ -219,8 +219,8 @@ function Observaciones() {
   const { getSum } = useObservations('summary')
   const { grouped } = useObservacionData()
   const syncProps = useObservacionSync()
-  const canSeeEstados = hasRole(['sudo', 'control_calidad', 'jefe_finca', 'supervisor_estados_fenologicos'])
-  const canSeeSensores = hasRole(['sudo', 'control_calidad', 'jefe_finca', 'supervisor_sensores'])
+  const canSeeEstados = hasRole(['sudo', 'control_de_calidad', 'jefe_finca', 'supervisor_estados_fenologicos'])
+  const canSeeSensores = hasRole(['sudo', 'control_de_calidad', 'jefe_finca', 'supervisor_sensores'])
 
   const handleDelete = (observations: any[]) => {
     const raw = loadObservaciones()

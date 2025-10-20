@@ -31,7 +31,7 @@ export const ALL_PINCHE_FIELDS = [
 // -------- User Types --------
 export type UserRole =
     | 'sudo'                          // Full system access
-    | 'control_calidad'               // Quality control - same as sudo
+    | 'control_de_calidad'            // Quality control - same as sudo
     | 'jefe_finca'                    // Farm manager - sees everything
     | 'supervisor_estados_fenologicos' // Only estados fenológicos
     | 'supervisor_sensores'            // Only sensores

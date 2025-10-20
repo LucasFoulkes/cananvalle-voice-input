@@ -39,31 +39,31 @@ export function hasRole(allowedRoles: string[]): boolean {
 }
 
 export function isSudo(): boolean {
-  return hasRole(['sudo', 'control_calidad'])
+  return hasRole(['sudo', 'control_de_calidad'])
 }
 
 export function canAccessEstados(): boolean {
-  return hasRole(['sudo', 'control_calidad', 'jefe_finca', 'supervisor_estados_fenologicos', 'operario'])
+  return hasRole(['sudo', 'control_de_calidad', 'jefe_finca', 'supervisor_estados_fenologicos', 'operario'])
 }
 
 export function canAccessSensores(): boolean {
-  return hasRole(['sudo', 'control_calidad', 'jefe_finca', 'supervisor_sensores', 'operario'])
+  return hasRole(['sudo', 'control_de_calidad', 'jefe_finca', 'supervisor_sensores', 'operario'])
 }
 
 export function canAccessPinches(): boolean {
-  return hasRole(['sudo', 'control_calidad', 'jefe_finca', 'supervisor_pinches', 'operario'])
+  return hasRole(['sudo', 'control_de_calidad', 'jefe_finca', 'supervisor_pinches', 'operario'])
 }
 
 export function canViewObservaciones(): boolean {
-  return hasRole(['sudo', 'control_calidad', 'jefe_finca', 'supervisor_estados_fenologicos', 'supervisor_sensores'])
+  return hasRole(['sudo', 'control_de_calidad', 'jefe_finca', 'supervisor_estados_fenologicos', 'supervisor_sensores'])
 }
 
 export function canViewPinches(): boolean {
-  return hasRole(['sudo', 'control_calidad', 'jefe_finca', 'supervisor_pinches'])
+  return hasRole(['sudo', 'control_de_calidad', 'jefe_finca', 'supervisor_pinches'])
 }
 
 export function canViewQualityControl(): boolean {
-  return hasRole(['sudo', 'control_calidad', 'jefe_finca', 'supervisor_estados_fenologicos', 'supervisor_sensores', 'supervisor_pinches'])
+  return hasRole(['sudo', 'control_de_calidad', 'jefe_finca', 'supervisor_estados_fenologicos', 'supervisor_sensores', 'supervisor_pinches'])
 }
 
 export function isOperarioOnly(): boolean {

@@ -26,7 +26,7 @@ function ControlCalidadComponent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const canSeeEverything = hasRole(['sudo', 'control_calidad', 'jefe_finca'])
+  const canSeeEverything = hasRole(['sudo', 'control_de_calidad', 'jefe_finca'])
   const canSeeEstadosOnly = hasRole(['supervisor_estados_fenologicos'])
   const canSeeSensoresOnly = hasRole(['supervisor_sensores'])
   const canSeePinchesOnly = hasRole(['supervisor_pinches'])
