@@ -15,7 +15,7 @@ export const ALL_OBSERVATION_FIELDS = [
 // PINCHE FIELD CONFIGURATION
 // ============================================
 export const PINCHE_CONFIG = {
-    location: ['finca', 'bloque', 'cama'] as const,
+    location: ['finca', 'bloque', 'variedad'] as const,
     tipos: ['apertura', 'programado', 'sanitario'] as const,
 } as const
 
@@ -23,6 +23,8 @@ export const ALL_PINCHE_FIELDS = [
     ...PINCHE_CONFIG.location,
     ...PINCHE_CONFIG.tipos
 ] as const
+
+export type PincheTipo = 'pinche apertura' | 'pinche programado' | 'pinche sanitario'
 
 // ============================================
 // TYPES
@@ -124,13 +126,21 @@ export type ProcessCommandOptions = {
 }
 
 // -------- Pinche Types --------
+export type VariedadOption = {
+    id: number
+    nombre: string
+    color: string | null
+    bloqueId: number | null
+}
+
 export type Pinche = {
     fecha: string
     finca: string  // Finca ID (e.g., "1" for finca with id_finca=1), not name
-    bloque: string  // Bloque name (e.g., "A")
-    cama: string  // Cama name (e.g., "1")
-    variedad?: string  // Optional
-    tipo: 'pinche_apertura' | 'pinche_programado' | 'pinche_sanitario'
+    bloque: string  // Bloque nombre (e.g., "A")
+    variedadId: number | null
+    variedad: string  // Variedad nombre selecionado
+    variedadColor?: string | null
+    tipo: PincheTipo
     cantidad: number
     gps?: GpsLocation  // For timezone only, not synced to DB
     userId?: number | null  // For quality control only, not synced to DB
@@ -189,6 +199,8 @@ export interface UsePinchesReturn {
     // Field configuration
     items: readonly string[]
     locationFieldCount: number
+    selectedVariedad: VariedadOption | null
+    selectVariedad: (option: VariedadOption | null) => void
     // Actions
     save: (index: number, value: string) => Promise<void>
     getSum: (pincheIndex: number, location: [string, string, string], date: string) => number

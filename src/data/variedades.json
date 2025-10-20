@@ -1,0 +1,970 @@
+{
+  "1": {
+    "1": [
+      {
+        "id": 45,
+        "nombre": "Aerobic",
+        "color": "naranja",
+        "bloqueId": 184
+      },
+      {
+        "id": 52,
+        "nombre": "Mondial",
+        "color": "blanco",
+        "bloqueId": 184
+      }
+    ],
+    "2": [
+      {
+        "id": 73,
+        "nombre": "Amsterdam",
+        "color": "rojo",
+        "bloqueId": 185
+      },
+      {
+        "id": 46,
+        "nombre": "Cabaret",
+        "color": "bicolor amarillo",
+        "bloqueId": 185
+      },
+      {
+        "id": 37,
+        "nombre": "Orange Crush",
+        "color": "naranja",
+        "bloqueId": 185
+      },
+      {
+        "id": 78,
+        "nombre": "Quicksand",
+        "color": "beige",
+        "bloqueId": 185
+      },
+      {
+        "id": 47,
+        "nombre": "Red Panther",
+        "color": "rojo",
+        "bloqueId": 185
+      },
+      {
+        "id": 21,
+        "nombre": "Tibet",
+        "color": "blanco",
+        "bloqueId": 185
+      }
+    ],
+    "3": [
+      {
+        "id": 1,
+        "nombre": "Freedom",
+        "color": "rojo",
+        "bloqueId": 186
+      }
+    ],
+    "4": [
+      {
+        "id": 1,
+        "nombre": "Freedom",
+        "color": "rojo",
+        "bloqueId": 187
+      }
+    ],
+    "5": [
+      {
+        "id": 79,
+        "nombre": "Enchantment",
+        "color": "coral",
+        "bloqueId": 188
+      },
+      {
+        "id": 78,
+        "nombre": "Quicksand",
+        "color": "beige",
+        "bloqueId": 188
+      }
+    ],
+    "6": [
+      {
+        "id": 52,
+        "nombre": "Mondial",
+        "color": "blanco",
+        "bloqueId": 189
+      },
+      {
+        "id": 22,
+        "nombre": "Pink Floyd",
+        "color": "fucsia",
+        "bloqueId": 189
+      },
+      {
+        "id": 7,
+        "nombre": "Sophie",
+        "color": "rosa claro",
+        "bloqueId": 189
+      },
+      {
+        "id": 80,
+        "nombre": "White O Hara",
+        "color": "blanco",
+        "bloqueId": 189
+      }
+    ],
+    "7": [
+      {
+        "id": 48,
+        "nombre": "Gotcha",
+        "color": "fucsia",
+        "bloqueId": 190
+      },
+      {
+        "id": 37,
+        "nombre": "Orange Crush",
+        "color": "naranja",
+        "bloqueId": 190
+      }
+    ],
+    "8": [
+      {
+        "id": 74,
+        "nombre": "Carpe Diem",
+        "color": "naranja",
+        "bloqueId": 191
+      },
+      {
+        "id": 1,
+        "nombre": "Freedom",
+        "color": "rojo",
+        "bloqueId": 191
+      },
+      {
+        "id": 52,
+        "nombre": "Mondial",
+        "color": "blanco",
+        "bloqueId": 191
+      },
+      {
+        "id": 38,
+        "nombre": "Sweet Unique",
+        "color": "rosa",
+        "bloqueId": 191
+      },
+      {
+        "id": 21,
+        "nombre": "Tibet",
+        "color": "blanco",
+        "bloqueId": 191
+      }
+    ],
+    "9": [
+      {
+        "id": 43,
+        "nombre": "Brighton",
+        "color": "amarillo",
+        "bloqueId": 192
+      },
+      {
+        "id": 76,
+        "nombre": "Deep Purple",
+        "color": "lavanda",
+        "bloqueId": 192
+      },
+      {
+        "id": 39,
+        "nombre": "Esperance",
+        "color": "crema",
+        "bloqueId": 192
+      }
+    ],
+    "10": [
+      {
+        "id": 63,
+        "nombre": "Amnesia",
+        "color": "lavanda grisácea",
+        "bloqueId": 193
+      },
+      {
+        "id": 52,
+        "nombre": "Mondial",
+        "color": "blanco",
+        "bloqueId": 193
+      },
+      {
+        "id": 81,
+        "nombre": "Pink O Hara",
+        "color": "rosa",
+        "bloqueId": 193
+      },
+      {
+        "id": 54,
+        "nombre": "QueenBerry",
+        "color": "rosa oscuro",
+        "bloqueId": 193
+      }
+    ],
+    "11": [
+      {
+        "id": 55,
+        "nombre": "Champagner",
+        "color": "champaña",
+        "bloqueId": 194
+      },
+      {
+        "id": 8,
+        "nombre": "Free Spirit",
+        "color": "naranja",
+        "bloqueId": 194
+      },
+      {
+        "id": 1,
+        "nombre": "Freedom",
+        "color": "rojo",
+        "bloqueId": 194
+      },
+      {
+        "id": 9,
+        "nombre": "Ocean Song",
+        "color": "lavanda",
+        "bloqueId": 194
+      }
+    ],
+    "12": [
+      {
+        "id": 77,
+        "nombre": "Blizzard",
+        "color": "blanco",
+        "bloqueId": 195
+      },
+      {
+        "id": 39,
+        "nombre": "Esperance",
+        "color": "crema",
+        "bloqueId": 195
+      },
+      {
+        "id": 52,
+        "nombre": "Mondial",
+        "color": "blanco",
+        "bloqueId": 195
+      },
+      {
+        "id": 22,
+        "nombre": "Pink Floyd",
+        "color": "fucsia",
+        "bloqueId": 195
+      },
+      {
+        "id": 56,
+        "nombre": "Shimmer",
+        "color": "durazno",
+        "bloqueId": 195
+      }
+    ],
+    "13": [
+      {
+        "id": 10,
+        "nombre": "Jessika",
+        "color": "fucsia",
+        "bloqueId": 196
+      },
+      {
+        "id": 37,
+        "nombre": "Orange Crush",
+        "color": "naranja",
+        "bloqueId": 196
+      },
+      {
+        "id": 23,
+        "nombre": "Tiffany",
+        "color": "rosa concha",
+        "bloqueId": 196
+      }
+    ],
+    "14": [
+      {
+        "id": 71,
+        "nombre": "Andrea",
+        "color": "fucsia",
+        "bloqueId": 197
+      },
+      {
+        "id": 2,
+        "nombre": "Vendela",
+        "color": "marfil",
+        "bloqueId": 197
+      }
+    ],
+    "15": [
+      {
+        "id": 11,
+        "nombre": "Joy",
+        "color": "naranja",
+        "bloqueId": 198
+      },
+      {
+        "id": 56,
+        "nombre": "Shimmer",
+        "color": "durazno",
+        "bloqueId": 198
+      }
+    ],
+    "16": [
+      {
+        "id": 12,
+        "nombre": "Barista",
+        "color": "caramelo",
+        "bloqueId": 199
+      },
+      {
+        "id": 52,
+        "nombre": "Mondial",
+        "color": "blanco",
+        "bloqueId": 199
+      }
+    ],
+    "17": [
+      {
+        "id": 1,
+        "nombre": "Freedom",
+        "color": "rojo",
+        "bloqueId": 200
+      }
+    ],
+    "18": [
+      {
+        "id": 46,
+        "nombre": "Cabaret",
+        "color": "bicolor amarillo",
+        "bloqueId": 201
+      },
+      {
+        "id": 30,
+        "nombre": "Proud",
+        "color": "blanco",
+        "bloqueId": 201
+      },
+      {
+        "id": 2,
+        "nombre": "Vendela",
+        "color": "marfil",
+        "bloqueId": 201
+      }
+    ],
+    "19": [
+      {
+        "id": 63,
+        "nombre": "Amnesia",
+        "color": "lavanda grisácea",
+        "bloqueId": 202
+      },
+      {
+        "id": 40,
+        "nombre": "Mandala",
+        "color": "naranja",
+        "bloqueId": 202
+      },
+      {
+        "id": 22,
+        "nombre": "Pink Floyd",
+        "color": "fucsia",
+        "bloqueId": 202
+      },
+      {
+        "id": 78,
+        "nombre": "Quicksand",
+        "color": "beige",
+        "bloqueId": 202
+      }
+    ],
+    "20": [
+      {
+        "id": 9,
+        "nombre": "Ocean Song",
+        "color": "lavanda",
+        "bloqueId": 203
+      },
+      {
+        "id": 2,
+        "nombre": "Vendela",
+        "color": "marfil",
+        "bloqueId": 203
+      }
+    ],
+    "21": [
+      {
+        "id": 43,
+        "nombre": "Brighton",
+        "color": "amarillo",
+        "bloqueId": 204
+      },
+      {
+        "id": 13,
+        "nombre": "Coral Reef",
+        "color": "coral",
+        "bloqueId": 204
+      }
+    ],
+    "22": [
+      {
+        "id": 1,
+        "nombre": "Freedom",
+        "color": "rojo",
+        "bloqueId": 205
+      }
+    ],
+    "23": [
+      {
+        "id": 41,
+        "nombre": "Pink X-Pression",
+        "color": "rosa",
+        "bloqueId": 206
+      },
+      {
+        "id": 23,
+        "nombre": "Tiffany",
+        "color": "rosa concha",
+        "bloqueId": 206
+      },
+      {
+        "id": 2,
+        "nombre": "Vendela",
+        "color": "marfil",
+        "bloqueId": 206
+      }
+    ],
+    "24": [
+      {
+        "id": 39,
+        "nombre": "Esperance",
+        "color": "crema",
+        "bloqueId": 207
+      },
+      {
+        "id": 57,
+        "nombre": "Fortune",
+        "color": "rojo",
+        "bloqueId": 207
+      },
+      {
+        "id": 61,
+        "nombre": "Kahala",
+        "color": "durazno",
+        "bloqueId": 207
+      },
+      {
+        "id": 56,
+        "nombre": "Shimmer",
+        "color": "durazno",
+        "bloqueId": 207
+      },
+      {
+        "id": 21,
+        "nombre": "Tibet",
+        "color": "blanco",
+        "bloqueId": 207
+      }
+    ],
+    "25": [
+      {
+        "id": 8,
+        "nombre": "Free Spirit",
+        "color": "naranja",
+        "bloqueId": 208
+      },
+      {
+        "id": 14,
+        "nombre": "Magic Times",
+        "color": "bicolor rosa",
+        "bloqueId": 208
+      },
+      {
+        "id": 38,
+        "nombre": "Sweet Unique",
+        "color": "rosa",
+        "bloqueId": 208
+      }
+    ],
+    "26": [
+      {
+        "id": 76,
+        "nombre": "Deep Purple",
+        "color": "lavanda",
+        "bloqueId": 209
+      },
+      {
+        "id": 21,
+        "nombre": "Tibet",
+        "color": "blanco",
+        "bloqueId": 209
+      }
+    ]
+  },
+  "2": {
+    "1": [
+      {
+        "id": 59,
+        "nombre": "Playa Blanca",
+        "color": "blanco",
+        "bloqueId": 210
+      },
+      {
+        "id": 15,
+        "nombre": "Vicky Gardens",
+        "color": "durazno",
+        "bloqueId": 210
+      }
+    ],
+    "2": [
+      {
+        "id": 25,
+        "nombre": "Cotton X-Pression",
+        "color": "blanco",
+        "bloqueId": 211
+      },
+      {
+        "id": 24,
+        "nombre": "Faith",
+        "color": "lavanda grisácea",
+        "bloqueId": 211
+      },
+      {
+        "id": 58,
+        "nombre": "High & Magic",
+        "color": "bicolor amarillo",
+        "bloqueId": 211
+      }
+    ],
+    "4": [
+      {
+        "id": 1,
+        "nombre": "Freedom",
+        "color": "rojo",
+        "bloqueId": 213
+      }
+    ],
+    "5": [
+      {
+        "id": 43,
+        "nombre": "Brighton",
+        "color": "amarillo",
+        "bloqueId": 214
+      },
+      {
+        "id": 49,
+        "nombre": "Lemonade",
+        "color": "amarillo pálido",
+        "bloqueId": 214
+      }
+    ],
+    "6": [
+      {
+        "id": 42,
+        "nombre": "Explorer",
+        "color": "rojo",
+        "bloqueId": 215
+      }
+    ],
+    "7": [
+      {
+        "id": 2,
+        "nombre": "Vendela",
+        "color": "marfil",
+        "bloqueId": 216
+      }
+    ],
+    "8": [
+      {
+        "id": 3,
+        "nombre": "Engagement",
+        "color": "rosa",
+        "bloqueId": 217
+      },
+      {
+        "id": 42,
+        "nombre": "Explorer",
+        "color": "rojo",
+        "bloqueId": 217
+      }
+    ],
+    "9": [
+      {
+        "id": 62,
+        "nombre": "Blueberry",
+        "color": "púrpura",
+        "bloqueId": 218
+      },
+      {
+        "id": 60,
+        "nombre": "Nina",
+        "color": "rojo",
+        "bloqueId": 218
+      },
+      {
+        "id": 59,
+        "nombre": "Playa Blanca",
+        "color": "blanco",
+        "bloqueId": 218
+      }
+    ],
+    "10": [
+      {
+        "id": 27,
+        "nombre": "Frutteto",
+        "color": "rosa claro",
+        "bloqueId": 219
+      },
+      {
+        "id": 59,
+        "nombre": "Playa Blanca",
+        "color": "blanco",
+        "bloqueId": 219
+      },
+      {
+        "id": 44,
+        "nombre": "Princess Crown",
+        "color": "rosa",
+        "bloqueId": 219
+      }
+    ],
+    "11": [
+      {
+        "id": 1,
+        "nombre": "Freedom",
+        "color": "rojo",
+        "bloqueId": 220
+      }
+    ],
+    "12": [
+      {
+        "id": 1,
+        "nombre": "Freedom",
+        "color": "rojo",
+        "bloqueId": 221
+      }
+    ],
+    "13": [
+      {
+        "id": 42,
+        "nombre": "Explorer",
+        "color": "rojo",
+        "bloqueId": 222
+      },
+      {
+        "id": 1,
+        "nombre": "Freedom",
+        "color": "rojo",
+        "bloqueId": 222
+      }
+    ],
+    "14": [
+      {
+        "id": 42,
+        "nombre": "Explorer",
+        "color": "rojo",
+        "bloqueId": 223
+      },
+      {
+        "id": 16,
+        "nombre": "Full Monty",
+        "color": "fucsia",
+        "bloqueId": 223
+      },
+      {
+        "id": 64,
+        "nombre": "Hearts",
+        "color": "rojo",
+        "bloqueId": 223
+      }
+    ],
+    "15": [
+      {
+        "id": 28,
+        "nombre": "Be Sweet",
+        "color": "rosa claro",
+        "bloqueId": 224
+      },
+      {
+        "id": 4,
+        "nombre": "Candlelight",
+        "color": "amarillo pálido",
+        "bloqueId": 224
+      },
+      {
+        "id": 60,
+        "nombre": "Nina",
+        "color": "rojo",
+        "bloqueId": 224
+      },
+      {
+        "id": 2,
+        "nombre": "Vendela",
+        "color": "marfil",
+        "bloqueId": 224
+      }
+    ],
+    "16": [
+      {
+        "id": 66,
+        "nombre": "Felicity",
+        "color": "durazno",
+        "bloqueId": 225
+      },
+      {
+        "id": 27,
+        "nombre": "Frutteto",
+        "color": "rosa claro",
+        "bloqueId": 225
+      },
+      {
+        "id": 59,
+        "nombre": "Playa Blanca",
+        "color": "blanco",
+        "bloqueId": 225
+      },
+      {
+        "id": 5,
+        "nombre": "Sweetness",
+        "color": "bicolor rosa",
+        "bloqueId": 225
+      }
+    ],
+    "17": [
+      {
+        "id": 28,
+        "nombre": "Be Sweet",
+        "color": "rosa claro",
+        "bloqueId": 226
+      },
+      {
+        "id": 50,
+        "nombre": "Escimo",
+        "color": "blanco",
+        "bloqueId": 226
+      },
+      {
+        "id": 29,
+        "nombre": "Mia",
+        "color": "rosa",
+        "bloqueId": 226
+      },
+      {
+        "id": 67,
+        "nombre": "Momentum",
+        "color": "naranja",
+        "bloqueId": 226
+      }
+    ],
+    "18": [
+      {
+        "id": 17,
+        "nombre": "Cool Water",
+        "color": "lavanda",
+        "bloqueId": 227
+      },
+      {
+        "id": 24,
+        "nombre": "Faith",
+        "color": "lavanda grisácea",
+        "bloqueId": 227
+      },
+      {
+        "id": 51,
+        "nombre": "Pink Mondial",
+        "color": "rosa pálido",
+        "bloqueId": 227
+      },
+      {
+        "id": 30,
+        "nombre": "Proud",
+        "color": "blanco",
+        "bloqueId": 227
+      }
+    ],
+    "19": [
+      {
+        "id": 72,
+        "nombre": "Hermosa",
+        "color": "rosa claro",
+        "bloqueId": 228
+      },
+      {
+        "id": 52,
+        "nombre": "Mondial",
+        "color": "blanco",
+        "bloqueId": 228
+      },
+      {
+        "id": 51,
+        "nombre": "Pink Mondial",
+        "color": "rosa pálido",
+        "bloqueId": 228
+      },
+      {
+        "id": 53,
+        "nombre": "Queens Crown",
+        "color": "rosa lavanda",
+        "bloqueId": 228
+      },
+      {
+        "id": 18,
+        "nombre": "Spray Ginger",
+        "color": "rosa pálido",
+        "bloqueId": 228
+      },
+      {
+        "id": 65,
+        "nombre": "Spray Orange Star",
+        "color": "naranja",
+        "bloqueId": 228
+      },
+      {
+        "id": 19,
+        "nombre": "Spray Pascua",
+        "color": "blanco",
+        "bloqueId": 228
+      },
+      {
+        "id": 75,
+        "nombre": "Spray Sahara Sensation",
+        "color": "arena",
+        "bloqueId": 228
+      }
+    ],
+    "20": [
+      {
+        "id": 4,
+        "nombre": "Candlelight",
+        "color": "amarillo pálido",
+        "bloqueId": 229
+      },
+      {
+        "id": 31,
+        "nombre": "Candy X-Pression",
+        "color": "rosa",
+        "bloqueId": 229
+      },
+      {
+        "id": 6,
+        "nombre": "Country Home",
+        "color": "durazno",
+        "bloqueId": 229
+      }
+    ],
+    "21": [
+      {
+        "id": 32,
+        "nombre": "Nena",
+        "color": "fucsia",
+        "bloqueId": 230
+      },
+      {
+        "id": 59,
+        "nombre": "Playa Blanca",
+        "color": "blanco",
+        "bloqueId": 230
+      }
+    ],
+    "22": [
+      {
+        "id": 1,
+        "nombre": "Freedom",
+        "color": "rojo",
+        "bloqueId": 231
+      }
+    ],
+    "23": [
+      {
+        "id": 20,
+        "nombre": "Antonia Gardens",
+        "color": "crema",
+        "bloqueId": 232
+      },
+      {
+        "id": 64,
+        "nombre": "Hearts",
+        "color": "rojo",
+        "bloqueId": 232
+      },
+      {
+        "id": 68,
+        "nombre": "Silantoi",
+        "color": "naranja",
+        "bloqueId": 232
+      },
+      {
+        "id": 33,
+        "nombre": "Sweet Beat",
+        "color": "rosa",
+        "bloqueId": 232
+      }
+    ],
+    "24": [
+      {
+        "id": 4,
+        "nombre": "Candlelight",
+        "color": "amarillo pálido",
+        "bloqueId": 233
+      },
+      {
+        "id": 35,
+        "nombre": "Carnelian",
+        "color": "naranja",
+        "bloqueId": 233
+      },
+      {
+        "id": 34,
+        "nombre": "Mandarin X-Pression",
+        "color": "naranja",
+        "bloqueId": 233
+      },
+      {
+        "id": 33,
+        "nombre": "Sweet Beat",
+        "color": "rosa",
+        "bloqueId": 233
+      }
+    ],
+    "25": [
+      {
+        "id": 42,
+        "nombre": "Explorer",
+        "color": "rojo",
+        "bloqueId": 234
+      }
+    ],
+    "26": [
+      {
+        "id": 36,
+        "nombre": "Juicy X-Pression",
+        "color": "naranja",
+        "bloqueId": 235
+      },
+      {
+        "id": 69,
+        "nombre": "Miss Piggy",
+        "color": "bicolor naranja",
+        "bloqueId": 235
+      }
+    ],
+    "3A": [
+      {
+        "id": 43,
+        "nombre": "Brighton",
+        "color": "amarillo",
+        "bloqueId": 236
+      },
+      {
+        "id": 26,
+        "nombre": "Super Sun",
+        "color": "amarillo",
+        "bloqueId": 236
+      }
+    ],
+    "3B": [
+      {
+        "id": 42,
+        "nombre": "Explorer",
+        "color": "rojo",
+        "bloqueId": 237
+      }
+    ]
+  }
+}

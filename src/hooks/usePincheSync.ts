@@ -31,10 +31,10 @@ export function usePincheSync() {
                 const pincheId = await syncPincheToSupabase(p)
 
                 // Update localStorage with success status
-                // Array structure: [userId, fecha, gps, finca, bloque, cama, apertura, programado, sanitario, syncStatus, pincheId]
+                // Array structure: [userId, fecha, gps, finca, bloque, variedadId, variedadNombre, apertura, programado, sanitario, syncStatus, pincheId]
                 if (p.globalIndex !== undefined) {
-                    raw[p.globalIndex][9] = 'success'  // syncStatus at index 9
-                    raw[p.globalIndex][10] = String(pincheId)  // pincheId at index 10
+                    raw[p.globalIndex][10] = 'success'  // syncStatus at index 10
+                    raw[p.globalIndex][11] = String(pincheId)  // pincheId at index 11
                 }
             }
 
@@ -61,10 +61,10 @@ export function usePincheSync() {
             const pincheId = await syncPincheToSupabase(p)
 
             // Update localStorage with success status
-            // Array structure: [userId, fecha, gps, finca, bloque, cama, apertura, programado, sanitario, syncStatus, pincheId]
+            // Array structure: [userId, fecha, gps, finca, bloque, variedadId, variedadNombre, apertura, programado, sanitario, syncStatus, pincheId]
             if (p.globalIndex !== undefined) {
-                raw[p.globalIndex][9] = 'success'  // syncStatus at index 9
-                raw[p.globalIndex][10] = String(pincheId)  // pincheId at index 10
+                raw[p.globalIndex][10] = 'success'  // syncStatus at index 10
+                raw[p.globalIndex][11] = String(pincheId)  // pincheId at index 11
                 savePinchesArray(raw)
             }
 

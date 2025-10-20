@@ -23,12 +23,12 @@ const PINCHE_LABELS = ["apertura", "programado", "sanitario"]
 
 // Parse location from key
 const parseLocation = (key: string) => {
-    const parts = key.split('-')
-    // Format: date-finca-bloque-cama-tipo
+    const parts = key.split('::')
+    // Format: date::finca::bloque::variedad::tipo
     return {
         finca: parts[1],
         bloque: parts[2],
-        cama: parts[3],
+        variedad: parts[3],
         tipo: parts[4],
         tuple: [parts[1], parts[2], parts[3]] as [string, string, string]
     }
@@ -39,12 +39,12 @@ const getActiveTipo = (pinche: any) => {
     const arr = pinche.originalArr
     if (!arr) return { name: '-', value: '-', index: -1 }
 
-    // Pinche array: [userId, fecha, gps, finca, bloque, cama, apertura, programado, sanitario, syncStatus, pincheId]
-    // Tipo fields are at indices 6-8
-    const tipoIndex = arr.slice(6, 9).findIndex((v: any) => v && v !== '0')
+    // Pinche array: [userId, fecha, gps, finca, bloque, variedadId, variedadNombre, apertura, programado, sanitario, syncStatus, pincheId]
+    // Tipo fields are at indices 7-9
+    const tipoIndex = arr.slice(7, 10).findIndex((v: any) => v && v !== '0')
     return tipoIndex >= 0 ? {
         name: PINCHE_LABELS[tipoIndex],
-        value: arr[6 + tipoIndex],
+        value: arr[7 + tipoIndex],
         index: tipoIndex
     } : { name: '-', value: '-', index: -1 }
 }
@@ -64,17 +64,17 @@ const SyncStatus = ({ status, isUploading, isSynced, hasError, size = 14, onSync
 
 // Location Card Component
 const LocationCard = ({ locationKey, pincheArr, date, getSum, syncProps, onDelete }: any) => {
-    const { finca, bloque, cama, tuple } = parseLocation(locationKey)
+    const { finca, bloque, variedad, tuple } = parseLocation(locationKey)
     const { uploading, synced, errors, areAllSynced, handleSync } = syncProps
     const bgColor = 'bg-emerald-800'
     const hoverColor = 'hover:bg-emerald-700'
 
-    const startIndex = 3  // Pinche tipos start at index 3 (after finca, bloque, cama)
+    const startIndex = 3  // Pinche tipos start at index 3 (after finca, bloque, variedad)
 
     return (
         <Dialog>
             <h3 className="text-sm text-center flex justify-center items-center gap-1">
-                F {finca} <Dot /> B {bloque} <Dot /> C {cama}
+                F {finca} <Dot /> B {bloque} <Dot /> V {variedad || '-'}
             </h3>
             <div className={`${bgColor} rounded-xl p-1`}>
                 <DialogTrigger asChild>
@@ -104,7 +104,7 @@ const LocationCard = ({ locationKey, pincheArr, date, getSum, syncProps, onDelet
                                     size={14}
                                     onClick={(e) => {
                                         e.stopPropagation()
-                                        confirm(`¿Eliminar todos los pinches de F${finca} B${bloque} C${cama} en ${date}?`) && onDelete(pincheArr)
+                                        confirm(`¿Eliminar todos los pinches de F${finca} B${bloque} V${variedad || '-'} en ${date}?`) && onDelete(pincheArr)
                                     }}
                                 />
                             </div>
@@ -115,7 +115,7 @@ const LocationCard = ({ locationKey, pincheArr, date, getSum, syncProps, onDelet
             <PincheDialog
                 finca={finca}
                 bloque={bloque}
-                cama={cama}
+                variedad={variedad}
                 pincheArr={pincheArr}
                 syncProps={syncProps}
                 onDelete={onDelete}
@@ -125,14 +125,14 @@ const LocationCard = ({ locationKey, pincheArr, date, getSum, syncProps, onDelet
 }
 
 // Pinche Dialog Component
-const PincheDialog = ({ finca, bloque, cama, pincheArr, syncProps, onDelete }: any) => {
+const PincheDialog = ({ finca, bloque, variedad, pincheArr, syncProps, onDelete }: any) => {
     const { handleSyncOne } = syncProps
 
     return (
         <DialogContent className="max-w-[calc(100vw-1rem)] w-full sm:max-w-2xl max-h-[calc(100vh-2rem)] overflow-hidden bg-zinc-900 text-white border-zinc-800">
             <DialogHeader>
                 <DialogTitle>
-                    Finca {finca} • Bloque {bloque} • Cama {cama}
+                    Finca {finca} • Bloque {bloque} • Variedad {variedad || '-'}
                 </DialogTitle>
             </DialogHeader>
             <div className="max-h-[calc(100vh-12rem)] overflow-y-auto">

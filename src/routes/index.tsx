@@ -8,9 +8,20 @@ import { usePinches } from '@/hooks/usePinches'
 import { Spinner } from '@/components/ui/spinner'
 import { AudioVisualizer } from '@/components/AudioVisualizer'
 import { Button } from '@/components/ui/button'
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogClose,
+} from '@/components/ui/dialog'
 import { processObservationCommand } from '@/lib/Command'
 import { getCurrentUser, canAccessEstados, canAccessSensores, canAccessPinches } from '@/lib/auth'
 import { formatDateGroupInRecordedTimezone } from '@/lib/gpsTimezone'
+import { getVariedades } from '@/lib/variedades'
+import type { VariedadOption } from '@/types'
 
 export const Route = createFileRoute('/')({
     component: ObservationRecorderRoute,
@@ -84,6 +95,14 @@ function ObservationRecorderRoute() {
     const currentLocation = mode === 'pinches'
         ? (pincheHook.pinche.slice(0, 3) as [string, string, string])
         : (observationHook.observacion.slice(0, 3) as [string, string, string])
+
+    const pincheFinca = pincheHook.pinche[0]
+    const pincheBloque = pincheHook.pinche[1]
+    const variedadDisplay = pincheHook.selectedVariedad?.nombre || pincheHook.pinche[2]
+    const variedadOptions = useMemo(() => {
+        if (mode !== 'pinches') return [] as VariedadOption[]
+        return getVariedades(pincheFinca, pincheBloque)
+    }, [mode, pincheFinca, pincheBloque])
 
     // Helper function to get readable label for field
     const getFieldLabel = (item: string): string => {
@@ -178,6 +197,7 @@ function ObservationRecorderRoute() {
                         {visibleItems.map((item) => {
                             // Calculate the actual index in the full items array
                             const actualIndex = items.indexOf(item)
+                            const isVariedadField = mode === 'pinches' && item === 'variedad'
 
                             // Get display value based on mode
                             let displayValue: string
@@ -201,8 +221,23 @@ function ObservationRecorderRoute() {
                             } else {
                                 // It's a location field - show current value
                                 displayValue = mode === 'pinches'
-                                    ? pincheHook.pinche[actualIndex]
+                                    ? (isVariedadField ? variedadDisplay : pincheHook.pinche[actualIndex])
                                     : observationHook.observacion[actualIndex]
+                            }
+
+                            if (isVariedadField) {
+                                const disabled = !pincheFinca || !pincheBloque
+
+                                return (
+                                    <VariedadTile
+                                        key={actualIndex}
+                                        label="Variedad"
+                                        value={displayValue}
+                                        options={variedadOptions}
+                                        disabled={disabled}
+                                        onSelect={pincheHook.selectVariedad}
+                                    />
+                                )
                             }
 
                             return (
@@ -253,5 +288,76 @@ function ObservationRecorderRoute() {
                 </>
             )}
         </div>
+    )
+}
+
+type VariedadTileProps = {
+    label: string
+    value: string
+    options: VariedadOption[]
+    disabled: boolean
+    onSelect: (option: VariedadOption | null) => void
+}
+
+function VariedadTile({ label, value, options, disabled, onSelect }: VariedadTileProps) {
+    const [open, setOpen] = useState(false)
+
+    const handleOpenChange = (next: boolean) => {
+        setOpen(next)
+    }
+
+    const handleSelect = (option: VariedadOption | null) => {
+        onSelect(option)
+        setOpen(false)
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+            <DialogTrigger asChild>
+                <div
+                    className={`aspect-square rounded-xl flex items-center relative select-none cursor-pointer ${disabled ? 'bg-zinc-900 text-zinc-500' : 'bg-zinc-800'}`}
+                >
+                    <span className='uppercase font-medium text-center absolute top-0 w-full'>{label}</span>
+                    <span className='text-center text-5xl font-regular w-full px-2 truncate'>{value || '-'}</span>
+                </div>
+            </DialogTrigger>
+            <DialogContent className='max-w-md'>
+                <DialogHeader>
+                    <DialogTitle className='uppercase'>{label}</DialogTitle>
+                </DialogHeader>
+                {disabled ? (
+                    <div className='text-sm text-muted-foreground'>Selecciona primero la finca y el bloque.</div>
+                ) : options.length === 0 ? (
+                    <div className='text-sm text-muted-foreground'>No hay variedades configuradas para esta combinación.</div>
+                ) : (
+                    <div className='grid gap-2 max-h-80 overflow-y-auto pr-1'>
+                        {options.map(option => {
+                            const isActive = option.nombre === value
+                            return (
+                                <Button
+                                    key={option.id}
+                                    variant={isActive ? 'default' : 'outline'}
+                                    className='justify-between'
+                                    onClick={() => handleSelect(option)}
+                                >
+                                    <span>{option.nombre}</span>
+                                    {option.color && (
+                                        <span className='text-xs text-muted-foreground'>{option.color}</span>
+                                    )}
+                                </Button>
+                            )
+                        })}
+                    </div>
+                )}
+                <DialogFooter className='justify-between'>
+                    <DialogClose asChild>
+                        <Button variant='outline' onClick={() => handleSelect(null)}>Limpiar</Button>
+                    </DialogClose>
+                    <DialogClose asChild>
+                        <Button>Listo</Button>
+                    </DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     )
 }

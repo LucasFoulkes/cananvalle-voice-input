@@ -1,7 +1,7 @@
 import { parseSpanishNumberFromWords } from './spanishNumbers'
 import type { ProcessCommandOptions } from '@/types'
 
-const LOCATION_COMMANDS = ['finca', 'bloque', 'cama']
+const LOCATION_COMMANDS = ['finca', 'bloque', 'variedad']
 
 const ESTADO_COMMANDS = ['arroz', 'arveja', 'garbanzo', 'color', 'abierto']
 
