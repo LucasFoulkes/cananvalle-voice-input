@@ -1,0 +1,1291 @@
+[
+    [
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 184,
+            "bloqueNombre": "1",
+            "variedadId": 45,
+            "variedadNombre": "Aerobic",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 184,
+            "bloqueNombre": "1",
+            "variedadId": 52,
+            "variedadNombre": "Mondial",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 193,
+            "bloqueNombre": "10",
+            "variedadId": 63,
+            "variedadNombre": "Amnesia",
+            "variedadColor": "lavanda grisácea"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 193,
+            "bloqueNombre": "10",
+            "variedadId": 52,
+            "variedadNombre": "Mondial",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 193,
+            "bloqueNombre": "10",
+            "variedadId": 81,
+            "variedadNombre": "Pink O Hara",
+            "variedadColor": "rosa"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 193,
+            "bloqueNombre": "10",
+            "variedadId": 54,
+            "variedadNombre": "QueenBerry",
+            "variedadColor": "rosa oscuro"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 194,
+            "bloqueNombre": "11",
+            "variedadId": 55,
+            "variedadNombre": "Champagner",
+            "variedadColor": "champaña"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 194,
+            "bloqueNombre": "11",
+            "variedadId": 8,
+            "variedadNombre": "Free Spirit",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 194,
+            "bloqueNombre": "11",
+            "variedadId": 1,
+            "variedadNombre": "Freedom",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 194,
+            "bloqueNombre": "11",
+            "variedadId": 9,
+            "variedadNombre": "Ocean Song",
+            "variedadColor": "lavanda"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 195,
+            "bloqueNombre": "12",
+            "variedadId": 77,
+            "variedadNombre": "Blizzard",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 195,
+            "bloqueNombre": "12",
+            "variedadId": 39,
+            "variedadNombre": "Esperance",
+            "variedadColor": "crema"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 195,
+            "bloqueNombre": "12",
+            "variedadId": 52,
+            "variedadNombre": "Mondial",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 195,
+            "bloqueNombre": "12",
+            "variedadId": 22,
+            "variedadNombre": "Pink Floyd",
+            "variedadColor": "fucsia"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 195,
+            "bloqueNombre": "12",
+            "variedadId": 56,
+            "variedadNombre": "Shimmer",
+            "variedadColor": "durazno"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 196,
+            "bloqueNombre": "13",
+            "variedadId": 10,
+            "variedadNombre": "Jessika",
+            "variedadColor": "fucsia"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 196,
+            "bloqueNombre": "13",
+            "variedadId": 37,
+            "variedadNombre": "Orange Crush",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 196,
+            "bloqueNombre": "13",
+            "variedadId": 23,
+            "variedadNombre": "Tiffany",
+            "variedadColor": "rosa concha"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 197,
+            "bloqueNombre": "14",
+            "variedadId": 71,
+            "variedadNombre": "Andrea",
+            "variedadColor": "fucsia"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 197,
+            "bloqueNombre": "14",
+            "variedadId": 2,
+            "variedadNombre": "Vendela",
+            "variedadColor": "marfil"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 198,
+            "bloqueNombre": "15",
+            "variedadId": 11,
+            "variedadNombre": "Joy",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 198,
+            "bloqueNombre": "15",
+            "variedadId": 56,
+            "variedadNombre": "Shimmer",
+            "variedadColor": "durazno"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 199,
+            "bloqueNombre": "16",
+            "variedadId": 12,
+            "variedadNombre": "Barista",
+            "variedadColor": "caramelo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 199,
+            "bloqueNombre": "16",
+            "variedadId": 52,
+            "variedadNombre": "Mondial",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 200,
+            "bloqueNombre": "17",
+            "variedadId": 1,
+            "variedadNombre": "Freedom",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 201,
+            "bloqueNombre": "18",
+            "variedadId": 46,
+            "variedadNombre": "Cabaret",
+            "variedadColor": "bicolor amarillo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 201,
+            "bloqueNombre": "18",
+            "variedadId": 30,
+            "variedadNombre": "Proud",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 201,
+            "bloqueNombre": "18",
+            "variedadId": 2,
+            "variedadNombre": "Vendela",
+            "variedadColor": "marfil"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 202,
+            "bloqueNombre": "19",
+            "variedadId": 63,
+            "variedadNombre": "Amnesia",
+            "variedadColor": "lavanda grisácea"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 202,
+            "bloqueNombre": "19",
+            "variedadId": 40,
+            "variedadNombre": "Mandala",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 202,
+            "bloqueNombre": "19",
+            "variedadId": 22,
+            "variedadNombre": "Pink Floyd",
+            "variedadColor": "fucsia"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 202,
+            "bloqueNombre": "19",
+            "variedadId": 78,
+            "variedadNombre": "Quicksand",
+            "variedadColor": "beige"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 185,
+            "bloqueNombre": "2",
+            "variedadId": 73,
+            "variedadNombre": "Amsterdam",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 185,
+            "bloqueNombre": "2",
+            "variedadId": 46,
+            "variedadNombre": "Cabaret",
+            "variedadColor": "bicolor amarillo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 185,
+            "bloqueNombre": "2",
+            "variedadId": 37,
+            "variedadNombre": "Orange Crush",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 185,
+            "bloqueNombre": "2",
+            "variedadId": 78,
+            "variedadNombre": "Quicksand",
+            "variedadColor": "beige"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 185,
+            "bloqueNombre": "2",
+            "variedadId": 47,
+            "variedadNombre": "Red Panther",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 185,
+            "bloqueNombre": "2",
+            "variedadId": 21,
+            "variedadNombre": "Tibet",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 203,
+            "bloqueNombre": "20",
+            "variedadId": 9,
+            "variedadNombre": "Ocean Song",
+            "variedadColor": "lavanda"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 203,
+            "bloqueNombre": "20",
+            "variedadId": 2,
+            "variedadNombre": "Vendela",
+            "variedadColor": "marfil"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 204,
+            "bloqueNombre": "21",
+            "variedadId": 43,
+            "variedadNombre": "Brighton",
+            "variedadColor": "amarillo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 204,
+            "bloqueNombre": "21",
+            "variedadId": 13,
+            "variedadNombre": "Coral Reef",
+            "variedadColor": "coral"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 205,
+            "bloqueNombre": "22",
+            "variedadId": 1,
+            "variedadNombre": "Freedom",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 206,
+            "bloqueNombre": "23",
+            "variedadId": 41,
+            "variedadNombre": "Pink X-Pression",
+            "variedadColor": "rosa"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 206,
+            "bloqueNombre": "23",
+            "variedadId": 23,
+            "variedadNombre": "Tiffany",
+            "variedadColor": "rosa concha"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 206,
+            "bloqueNombre": "23",
+            "variedadId": 2,
+            "variedadNombre": "Vendela",
+            "variedadColor": "marfil"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 207,
+            "bloqueNombre": "24",
+            "variedadId": 39,
+            "variedadNombre": "Esperance",
+            "variedadColor": "crema"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 207,
+            "bloqueNombre": "24",
+            "variedadId": 57,
+            "variedadNombre": "Fortune",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 207,
+            "bloqueNombre": "24",
+            "variedadId": 61,
+            "variedadNombre": "Kahala",
+            "variedadColor": "durazno"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 207,
+            "bloqueNombre": "24",
+            "variedadId": 56,
+            "variedadNombre": "Shimmer",
+            "variedadColor": "durazno"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 207,
+            "bloqueNombre": "24",
+            "variedadId": 21,
+            "variedadNombre": "Tibet",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 208,
+            "bloqueNombre": "25",
+            "variedadId": 8,
+            "variedadNombre": "Free Spirit",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 208,
+            "bloqueNombre": "25",
+            "variedadId": 14,
+            "variedadNombre": "Magic Times",
+            "variedadColor": "bicolor rosa"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 208,
+            "bloqueNombre": "25",
+            "variedadId": 38,
+            "variedadNombre": "Sweet Unique",
+            "variedadColor": "rosa"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 209,
+            "bloqueNombre": "26",
+            "variedadId": 76,
+            "variedadNombre": "Deep Purple",
+            "variedadColor": "lavanda"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 209,
+            "bloqueNombre": "26",
+            "variedadId": 21,
+            "variedadNombre": "Tibet",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 186,
+            "bloqueNombre": "3",
+            "variedadId": 1,
+            "variedadNombre": "Freedom",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 187,
+            "bloqueNombre": "4",
+            "variedadId": 1,
+            "variedadNombre": "Freedom",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 188,
+            "bloqueNombre": "5",
+            "variedadId": 79,
+            "variedadNombre": "Enchantment",
+            "variedadColor": "coral"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 188,
+            "bloqueNombre": "5",
+            "variedadId": 78,
+            "variedadNombre": "Quicksand",
+            "variedadColor": "beige"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 189,
+            "bloqueNombre": "6",
+            "variedadId": 52,
+            "variedadNombre": "Mondial",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 189,
+            "bloqueNombre": "6",
+            "variedadId": 22,
+            "variedadNombre": "Pink Floyd",
+            "variedadColor": "fucsia"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 189,
+            "bloqueNombre": "6",
+            "variedadId": 7,
+            "variedadNombre": "Sophie",
+            "variedadColor": "rosa claro"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 189,
+            "bloqueNombre": "6",
+            "variedadId": 80,
+            "variedadNombre": "White O Hara",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 190,
+            "bloqueNombre": "7",
+            "variedadId": 48,
+            "variedadNombre": "Gotcha",
+            "variedadColor": "fucsia"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 190,
+            "bloqueNombre": "7",
+            "variedadId": 37,
+            "variedadNombre": "Orange Crush",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 191,
+            "bloqueNombre": "8",
+            "variedadId": 74,
+            "variedadNombre": "Carpe Diem",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 191,
+            "bloqueNombre": "8",
+            "variedadId": 1,
+            "variedadNombre": "Freedom",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 191,
+            "bloqueNombre": "8",
+            "variedadId": 52,
+            "variedadNombre": "Mondial",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 191,
+            "bloqueNombre": "8",
+            "variedadId": 38,
+            "variedadNombre": "Sweet Unique",
+            "variedadColor": "rosa"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 191,
+            "bloqueNombre": "8",
+            "variedadId": 21,
+            "variedadNombre": "Tibet",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 192,
+            "bloqueNombre": "9",
+            "variedadId": 43,
+            "variedadNombre": "Brighton",
+            "variedadColor": "amarillo"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 192,
+            "bloqueNombre": "9",
+            "variedadId": 76,
+            "variedadNombre": "Deep Purple",
+            "variedadColor": "lavanda"
+        },
+        {
+            "fincaId": 1,
+            "fincaNombre": "Cananvalle",
+            "bloqueId": 192,
+            "bloqueNombre": "9",
+            "variedadId": 39,
+            "variedadNombre": "Esperance",
+            "variedadColor": "crema"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 210,
+            "bloqueNombre": "1",
+            "variedadId": 59,
+            "variedadNombre": "Playa Blanca",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 210,
+            "bloqueNombre": "1",
+            "variedadId": 15,
+            "variedadNombre": "Vicky Gardens",
+            "variedadColor": "durazno"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 219,
+            "bloqueNombre": "10",
+            "variedadId": 27,
+            "variedadNombre": "Frutteto",
+            "variedadColor": "rosa claro"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 219,
+            "bloqueNombre": "10",
+            "variedadId": 59,
+            "variedadNombre": "Playa Blanca",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 219,
+            "bloqueNombre": "10",
+            "variedadId": 44,
+            "variedadNombre": "Princess Crown",
+            "variedadColor": "rosa"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 220,
+            "bloqueNombre": "11",
+            "variedadId": 1,
+            "variedadNombre": "Freedom",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 221,
+            "bloqueNombre": "12",
+            "variedadId": 1,
+            "variedadNombre": "Freedom",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 222,
+            "bloqueNombre": "13",
+            "variedadId": 42,
+            "variedadNombre": "Explorer",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 222,
+            "bloqueNombre": "13",
+            "variedadId": 1,
+            "variedadNombre": "Freedom",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 223,
+            "bloqueNombre": "14",
+            "variedadId": 42,
+            "variedadNombre": "Explorer",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 223,
+            "bloqueNombre": "14",
+            "variedadId": 16,
+            "variedadNombre": "Full Monty",
+            "variedadColor": "fucsia"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 223,
+            "bloqueNombre": "14",
+            "variedadId": 64,
+            "variedadNombre": "Hearts",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 224,
+            "bloqueNombre": "15",
+            "variedadId": 28,
+            "variedadNombre": "Be Sweet",
+            "variedadColor": "rosa claro"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 224,
+            "bloqueNombre": "15",
+            "variedadId": 4,
+            "variedadNombre": "Candlelight",
+            "variedadColor": "amarillo pálido"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 224,
+            "bloqueNombre": "15",
+            "variedadId": 60,
+            "variedadNombre": "Nina",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 224,
+            "bloqueNombre": "15",
+            "variedadId": 2,
+            "variedadNombre": "Vendela",
+            "variedadColor": "marfil"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 225,
+            "bloqueNombre": "16",
+            "variedadId": 66,
+            "variedadNombre": "Felicity",
+            "variedadColor": "durazno"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 225,
+            "bloqueNombre": "16",
+            "variedadId": 27,
+            "variedadNombre": "Frutteto",
+            "variedadColor": "rosa claro"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 225,
+            "bloqueNombre": "16",
+            "variedadId": 59,
+            "variedadNombre": "Playa Blanca",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 225,
+            "bloqueNombre": "16",
+            "variedadId": 5,
+            "variedadNombre": "Sweetness",
+            "variedadColor": "bicolor rosa"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 226,
+            "bloqueNombre": "17",
+            "variedadId": 28,
+            "variedadNombre": "Be Sweet",
+            "variedadColor": "rosa claro"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 226,
+            "bloqueNombre": "17",
+            "variedadId": 50,
+            "variedadNombre": "Escimo",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 226,
+            "bloqueNombre": "17",
+            "variedadId": 29,
+            "variedadNombre": "Mia",
+            "variedadColor": "rosa"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 226,
+            "bloqueNombre": "17",
+            "variedadId": 67,
+            "variedadNombre": "Momentum",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 227,
+            "bloqueNombre": "18",
+            "variedadId": 17,
+            "variedadNombre": "Cool Water",
+            "variedadColor": "lavanda"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 227,
+            "bloqueNombre": "18",
+            "variedadId": 24,
+            "variedadNombre": "Faith",
+            "variedadColor": "lavanda grisácea"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 227,
+            "bloqueNombre": "18",
+            "variedadId": 51,
+            "variedadNombre": "Pink Mondial",
+            "variedadColor": "rosa pálido"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 227,
+            "bloqueNombre": "18",
+            "variedadId": 30,
+            "variedadNombre": "Proud",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 228,
+            "bloqueNombre": "19",
+            "variedadId": 72,
+            "variedadNombre": "Hermosa",
+            "variedadColor": "rosa claro"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 228,
+            "bloqueNombre": "19",
+            "variedadId": 52,
+            "variedadNombre": "Mondial",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 228,
+            "bloqueNombre": "19",
+            "variedadId": 51,
+            "variedadNombre": "Pink Mondial",
+            "variedadColor": "rosa pálido"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 228,
+            "bloqueNombre": "19",
+            "variedadId": 53,
+            "variedadNombre": "Queens Crown",
+            "variedadColor": "rosa lavanda"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 228,
+            "bloqueNombre": "19",
+            "variedadId": 18,
+            "variedadNombre": "Spray Ginger",
+            "variedadColor": "rosa pálido"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 228,
+            "bloqueNombre": "19",
+            "variedadId": 65,
+            "variedadNombre": "Spray Orange Star",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 228,
+            "bloqueNombre": "19",
+            "variedadId": 19,
+            "variedadNombre": "Spray Pascua",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 228,
+            "bloqueNombre": "19",
+            "variedadId": 75,
+            "variedadNombre": "Spray Sahara Sensation",
+            "variedadColor": "arena"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 211,
+            "bloqueNombre": "2",
+            "variedadId": 25,
+            "variedadNombre": "Cotton X-Pression",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 211,
+            "bloqueNombre": "2",
+            "variedadId": 24,
+            "variedadNombre": "Faith",
+            "variedadColor": "lavanda grisácea"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 211,
+            "bloqueNombre": "2",
+            "variedadId": 58,
+            "variedadNombre": "High & Magic",
+            "variedadColor": "bicolor amarillo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 229,
+            "bloqueNombre": "20",
+            "variedadId": 4,
+            "variedadNombre": "Candlelight",
+            "variedadColor": "amarillo pálido"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 229,
+            "bloqueNombre": "20",
+            "variedadId": 31,
+            "variedadNombre": "Candy X-Pression",
+            "variedadColor": "rosa"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 229,
+            "bloqueNombre": "20",
+            "variedadId": 6,
+            "variedadNombre": "Country Home",
+            "variedadColor": "durazno"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 230,
+            "bloqueNombre": "21",
+            "variedadId": 32,
+            "variedadNombre": "Nena",
+            "variedadColor": "fucsia"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 230,
+            "bloqueNombre": "21",
+            "variedadId": 59,
+            "variedadNombre": "Playa Blanca",
+            "variedadColor": "blanco"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 231,
+            "bloqueNombre": "22",
+            "variedadId": 1,
+            "variedadNombre": "Freedom",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 232,
+            "bloqueNombre": "23",
+            "variedadId": 20,
+            "variedadNombre": "Antonia Gardens",
+            "variedadColor": "crema"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 232,
+            "bloqueNombre": "23",
+            "variedadId": 64,
+            "variedadNombre": "Hearts",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 232,
+            "bloqueNombre": "23",
+            "variedadId": 68,
+            "variedadNombre": "Silantoi",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 232,
+            "bloqueNombre": "23",
+            "variedadId": 33,
+            "variedadNombre": "Sweet Beat",
+            "variedadColor": "rosa"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 233,
+            "bloqueNombre": "24",
+            "variedadId": 4,
+            "variedadNombre": "Candlelight",
+            "variedadColor": "amarillo pálido"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 233,
+            "bloqueNombre": "24",
+            "variedadId": 35,
+            "variedadNombre": "Carnelian",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 233,
+            "bloqueNombre": "24",
+            "variedadId": 34,
+            "variedadNombre": "Mandarin X-Pression",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 233,
+            "bloqueNombre": "24",
+            "variedadId": 33,
+            "variedadNombre": "Sweet Beat",
+            "variedadColor": "rosa"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 234,
+            "bloqueNombre": "25",
+            "variedadId": 42,
+            "variedadNombre": "Explorer",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 235,
+            "bloqueNombre": "26",
+            "variedadId": 36,
+            "variedadNombre": "Juicy X-Pression",
+            "variedadColor": "naranja"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 235,
+            "bloqueNombre": "26",
+            "variedadId": 69,
+            "variedadNombre": "Miss Piggy",
+            "variedadColor": "bicolor naranja"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 236,
+            "bloqueNombre": "3A",
+            "variedadId": 43,
+            "variedadNombre": "Brighton",
+            "variedadColor": "amarillo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 236,
+            "bloqueNombre": "3A",
+            "variedadId": 26,
+            "variedadNombre": "Super Sun",
+            "variedadColor": "amarillo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 237,
+            "bloqueNombre": "3B",
+            "variedadId": 42,
+            "variedadNombre": "Explorer",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 213,
+            "bloqueNombre": "4",
+            "variedadId": 1,
+            "variedadNombre": "Freedom",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 214,
+            "bloqueNombre": "5",
+            "variedadId": 43,
+            "variedadNombre": "Brighton",
+            "variedadColor": "amarillo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 214,
+            "bloqueNombre": "5",
+            "variedadId": 49,
+            "variedadNombre": "Lemonade",
+            "variedadColor": "amarillo pálido"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 215,
+            "bloqueNombre": "6",
+            "variedadId": 42,
+            "variedadNombre": "Explorer",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 216,
+            "bloqueNombre": "7",
+            "variedadId": 2,
+            "variedadNombre": "Vendela",
+            "variedadColor": "marfil"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 217,
+            "bloqueNombre": "8",
+            "variedadId": 3,
+            "variedadNombre": "Engagement",
+            "variedadColor": "rosa"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 217,
+            "bloqueNombre": "8",
+            "variedadId": 42,
+            "variedadNombre": "Explorer",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 218,
+            "bloqueNombre": "9",
+            "variedadId": 62,
+            "variedadNombre": "Blueberry",
+            "variedadColor": "púrpura"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 218,
+            "bloqueNombre": "9",
+            "variedadId": 60,
+            "variedadNombre": "Nina",
+            "variedadColor": "rojo"
+        },
+        {
+            "fincaId": 2,
+            "fincaNombre": "Santa Maria",
+            "bloqueId": 218,
+            "bloqueNombre": "9",
+            "variedadId": 59,
+            "variedadNombre": "Playa Blanca",
+            "variedadColor": "blanco"
+        }
+    ]
+]
