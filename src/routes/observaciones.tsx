@@ -1,8 +1,11 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Upload, Trash2, Loader2, Check, Dot } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import { Upload, Trash2, Loader2, Check, Dot, Pencil } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { loadObservaciones, saveObservacionesArray } from '@/lib/observationStorage'
+import { useState } from 'react'
 import { useObservations } from '@/hooks/useObservations'
 import { useObservacionData } from '@/hooks/useObservacionData'
 import { useObservacionSync } from '@/hooks/useObservacionSync'
@@ -101,7 +104,7 @@ const SyncStatus = ({ status, isUploading, isSynced, hasError, size = 14, onSync
 }
 
 // Location Card Component
-const LocationCard = ({ locationKey, obsArr, date, getSum, syncProps, onDelete }: any) => {
+const LocationCard = ({ locationKey, obsArr, date, getSum, syncProps, onDelete, onEdit }: any) => {
   const { finca, bloque, cama, tipo, tuple } = parseLocation(locationKey)
   const { uploading, synced, errors, areAllSynced, handleSync } = syncProps
 
@@ -126,7 +129,7 @@ const LocationCard = ({ locationKey, obsArr, date, getSum, syncProps, onDelete }
                 <div key={label} className="flex-1 capitalize">{label}</div>
               ))}
               <div className="w-10">Sync</div>
-              <div className="w-10">Del</div>
+              <div className="w-10">Editar</div>
             </div>
             <div className="flex items-center gap-1 font-semibold text-white text-xs text-center">
               {stageLabels.map((_: string, idx: number) => (
@@ -141,12 +144,12 @@ const LocationCard = ({ locationKey, obsArr, date, getSum, syncProps, onDelete }
                 />
               </div>
               <div className="w-10">
-                <Trash2
-                  className="inline cursor-pointer text-red-400"
+                <Pencil
+                  className="inline cursor-pointer text-blue-400"
                   size={14}
                   onClick={(e) => {
                     e.stopPropagation()
-                    confirm(`¿Eliminar todas las observaciones de F${finca} B${bloque} C${cama} en ${date}?`) && onDelete(obsArr)
+                    onEdit(obsArr, finca, bloque, cama)
                   }}
                 />
               </div>
@@ -214,6 +217,84 @@ const ObservationDialog = ({ finca, bloque, cama, obsArr, tipo, syncProps, onDel
   )
 }
 
+// Edit Location Dialog Component
+const EditLocationDialog = ({ isOpen, onClose, obsArr, currentFinca, currentBloque, currentCama, onSave, onDelete }: any) => {
+  const [finca, setFinca] = useState(currentFinca)
+  const [bloque, setBloque] = useState(currentBloque)
+  const [cama, setCama] = useState(currentCama)
+
+  const handleSave = () => {
+    if (!finca || !bloque || !cama) {
+      alert('Por favor ingresa todos los campos')
+      return
+    }
+    onSave(obsArr, finca, bloque, cama)
+    onClose()
+  }
+
+  const handleDelete = () => {
+    if (confirm(`¿Eliminar todas las observaciones de F${currentFinca} B${currentBloque} C${currentCama}?`)) {
+      onDelete(obsArr)
+      onClose()
+    }
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-[calc(100vw-1rem)] w-full sm:max-w-md bg-zinc-900 text-white border-zinc-800">
+        <DialogHeader>
+          <DialogTitle>Editar Ubicación</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-zinc-400 w-16">Finca</label>
+            <Input
+              type="text"
+              value={finca}
+              onChange={(e) => setFinca(e.target.value)}
+              className="bg-zinc-800 border-zinc-700 flex-1 text-center"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-zinc-400 w-16">Bloque</label>
+            <Input
+              type="text"
+              value={bloque}
+              onChange={(e) => setBloque(e.target.value)}
+              className="bg-zinc-800 border-zinc-700 flex-1 text-center"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-zinc-400 w-16">Cama</label>
+            <Input
+              type="text"
+              value={cama}
+              onChange={(e) => setCama(e.target.value)}
+              className="bg-zinc-800 border-zinc-700 flex-1 text-center"
+            />
+          </div>
+        </div>
+        <DialogFooter className="flex-col gap-2 sm:flex-col">
+          <div className="flex gap-2 w-full">
+            <DialogClose asChild>
+              <Button variant="outline" className="flex-1 bg-white text-black border-zinc-700 hover:bg-zinc-200">Cancelar</Button>
+            </DialogClose>
+            <Button onClick={handleSave} className="flex-1 bg-green-600 hover:bg-green-700">Guardar</Button>
+          </div>
+          <Button 
+            variant="destructive" 
+            onClick={handleDelete}
+            className="w-full"
+          >
+            <Trash2 className="mr-2" size={16} />
+            Eliminar Todas
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // Main Component
 function Observaciones() {
   const { getSum } = useObservations('summary')
@@ -222,10 +303,39 @@ function Observaciones() {
   const canSeeEstados = hasRole(['sudo', 'control_de_calidad', 'jefe_finca', 'supervisor_estados_fenologicos'])
   const canSeeSensores = hasRole(['sudo', 'control_de_calidad', 'jefe_finca', 'supervisor_sensores'])
 
+  // Edit dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editingObs, setEditingObs] = useState<any>(null)
+
   const handleDelete = (observations: any[]) => {
     const raw = loadObservaciones()
     const indicesToDelete = new Set(observations.map(o => o.globalIndex).filter(i => i !== undefined))
     saveObservacionesArray(raw.filter((_, i) => !indicesToDelete.has(i)))
+    window.location.reload()
+  }
+
+  const handleEdit = (obsArr: any[], finca: string, bloque: string, cama: string) => {
+    setEditingObs({ obsArr, finca, bloque, cama })
+    setEditDialogOpen(true)
+  }
+
+  const handleSaveEdit = (obsArr: any[], newFinca: string, newBloque: string, newCama: string) => {
+    const raw = loadObservaciones()
+    const indicesToUpdate = new Set(obsArr.map((o: any) => o.globalIndex).filter((i: any) => i !== undefined))
+    
+    const updated = raw.map((row, i) => {
+      if (indicesToUpdate.has(i)) {
+        // Update location fields (indices 3, 4, 5 are finca, bloque, cama)
+        const newRow = [...row]
+        newRow[3] = newFinca
+        newRow[4] = newBloque
+        newRow[5] = newCama
+        return newRow
+      }
+      return row
+    })
+    
+    saveObservacionesArray(updated)
     window.location.reload()
   }
 
@@ -293,6 +403,7 @@ function Observaciones() {
               getSum={getSum}
               syncProps={syncProps}
               onDelete={handleDelete}
+              onEdit={handleEdit}
             />
           )
         })
@@ -321,6 +432,19 @@ function Observaciones() {
         <div className="flex flex-col gap-1 overflow-y-auto h-full pb-2">
           {dateSections}
         </div>
+      )}
+      
+      {editingObs && (
+        <EditLocationDialog
+          isOpen={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          obsArr={editingObs.obsArr}
+          currentFinca={editingObs.finca}
+          currentBloque={editingObs.bloque}
+          currentCama={editingObs.cama}
+          onSave={handleSaveEdit}
+          onDelete={handleDelete}
+        />
       )}
     </div>
   )
