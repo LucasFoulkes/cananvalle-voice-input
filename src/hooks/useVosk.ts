@@ -73,7 +73,9 @@ export function useVosk(options: UseVoskOptions = {}) {
         setIsInitializing(true)
         try {
             if (!modelRef.current) {
-                modelRef.current = await createModel('/models/vosk-model-small-es-0.42.tar.gz')
+                const modelPath = `${import.meta.env.BASE_URL}models/vosk-model-small-es-0.42.tar.gz`
+                const modelUrl = new URL(modelPath, window.location.origin).href
+                modelRef.current = await createModel(modelUrl)
                 try { modelRef.current.setLogLevel?.(-1) } catch { }
             }
             if (!recognizerRef.current) {

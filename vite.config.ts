@@ -28,10 +28,10 @@ export default defineConfig({
     },
 
     workbox: {
-      globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+      globPatterns: ['**/*.{js,css,html,svg,png,ico,tar.gz,wasm}'],
       cleanupOutdatedCaches: true,
       clientsClaim: true,
-      maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB to handle large Vosk model
+      maximumFileSizeToCacheInBytes: 20 * 1024 * 1024, // 20 MB to handle large Vosk model
     },
 
     devOptions: {
