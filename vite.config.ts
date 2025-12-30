@@ -31,7 +31,7 @@ export default defineConfig({
       globPatterns: ['**/*.{js,css,html,svg,png,ico,tar.gz,wasm}'],
       cleanupOutdatedCaches: true,
       clientsClaim: true,
-      maximumFileSizeToCacheInBytes: 20 * 1024 * 1024, // 20 MB to handle large Vosk model
+      maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // 50 MB to handle large Vosk model
     },
 
     devOptions: {
